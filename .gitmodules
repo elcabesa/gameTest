@@ -1,0 +1,4 @@
+[submodule "src/entt"]
+	path = src/entt
+	url = git@github.com:skypjack/entt.git
+	branch = v3.6.0
