@@ -1,12 +1,58 @@
 #include <cmath>
 #include <iostream>
 #include <SFML/Graphics.hpp>
+#include "entt/src/entt/entt.hpp"
 
-#define POPULATION 10000
+#define DIMX 640
+#define DIMY 480
+#define POPULATION 20
 #define MALATI_INIZIALI 2
 #define PROB_AMMALARSI 20
 #define PROB_MORTE 3
 #define TEMPO_MALATTIA 20
+
+struct position {
+    float x;
+    float y;
+};
+
+struct velocity {
+    float dx;
+    float dy;
+};
+
+void initPopulation(entt::registry& reg) {
+    for(auto i = 0u; i < POPULATION; ++i) {
+        const auto entity = reg.create();
+        reg.emplace<position>(entity, float(std::rand() % DIMX), float(std::rand() % DIMY));
+        reg.emplace<velocity>(entity, float((std::rand() % 50)/100.0 - 0.245), float((std::rand() % 50)/100.0 - 0.245));
+    }
+}
+
+void updatePosition(entt::registry& reg) {
+    auto view = reg.view<position, velocity>();
+    for (const entt::entity e : view) {
+
+    }
+}
+
+void updateVertex(entt::registry& reg, sf::VertexArray &va) {
+    auto view = reg.view<position>();
+    unsigned int i = 0;
+    for (const entt::entity e : view) {
+        auto & p =view.get<position>(e); 
+        va[i++].position = sf::Vector2f(p.x, p.y);
+    }
+}
+
+void update(entt::registry& reg, sf::VertexArray &va, sf::Time elapsed) {
+    updatePosition(reg);
+    updateVertex(reg, va);
+}
+
+
+
+/*
 enum Status {
     sano,
     malato,
@@ -41,6 +87,7 @@ struct entity {
         //std::cout<<"x:"<<x<<" y:"<<y<<std::endl;
     }
 };
+
 
 void update(std::vector<entity>& ent, sf::VertexArray &va, sf::Time elapsed) {
     
@@ -155,12 +202,15 @@ void update(std::vector<entity>& ent, sf::VertexArray &va, sf::Time elapsed) {
     }
     std::cout<<"sani:"<<sani<< "\tmalati:"<<malati<<"\tmorti:"<<morti<<"\tguariti:"<<guariti<<"\tvaccinati:"<<vaccinati<<std::endl;
     
-}
+}*/
 
 int main()
 {
 
-    std::vector<entity> entities(POPULATION);
+    entt::registry registry;
+
+    initPopulation(registry);
+
     sf::VertexArray va(sf::Points, POPULATION);
     // create the window
     sf::RenderWindow window(sf::VideoMode(640, 480), "Particles");
@@ -172,7 +222,6 @@ int main()
 
     // create a clock to track the elapsed time
     sf::Clock clock;
-    sf::Clock avgClock;
     sf::Clock occupancyClock;
     //int count = 0;
 
@@ -191,7 +240,7 @@ int main()
         sf::Time evtTime = occupancyClock.restart();
         // update it
         sf::Time elapsed = clock.restart();
-        update(entities, va, elapsed);
+        update(registry, va, elapsed);
         
         sf::Time simTime = occupancyClock.restart();
 
