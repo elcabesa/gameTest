@@ -2,14 +2,23 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 #include "entt/src/entt/entt.hpp"
+#include "quadtree/include/Quadtree.h"
 
-#define DIMX 640
-#define DIMY 480
-#define POPULATION 10000
-#define MALATI_INIZIALI 20
+#define DIMX 800
+#define DIMY 400
+#define POPULATION 20000
+#define MALATI_INIZIALI 2
 #define PROB_AMMALARSI 20
 #define PROB_MORTE 3
 #define TEMPO_MALATTIA 20
+
+std::vector<sf::RectangleShape> quadTreeRects;
+
+struct Node
+{
+    quadtree::Box<float> box;
+    entt::entity id;
+};
 
 struct position {
     float x;
@@ -45,7 +54,6 @@ void initPopulation(entt::registry& reg) {
 }
 
 void updatePosition(entt::registry& reg) {
-    // TODO don't move death
     auto view = reg.view<position, velocity>();
     for (const entt::entity e : view) {
         auto & p =view.get<position>(e); 
@@ -77,39 +85,68 @@ void updateHealth(entt::registry& reg, sf::Time elapsed) {
 }
 
 void calcCollision(entt::registry& reg) {
+
+    auto box = quadtree::Box(0.0f, 0.0f, float(DIMX+2), float(DIMY+2));
+    auto getBox = [](Node* node)
+    {
+        return node->box;
+    };
+    auto quadtree = quadtree::Quadtree<Node*, decltype(getBox)>(box, getBox);
+
     auto view = reg.view<position, velocity>();
-    
+    std::vector<Node> nodes;
 
     for (auto it = view.begin(); it!= view.end(); ++it) {
         auto& en1 = *it;
         auto & p1 =view.get<position>(en1); 
-        auto & v1 =view.get<velocity>(en1); 
-        auto it2 = it;
-        ++it2;
-        for (; it2!= view.end(); ++it2) {
-            auto& en2 = *it2;
-            auto & p2 =view.get<position>(en2); 
-            auto & v2 =view.get<velocity>(en2); 
-            if(std::abs(p1.x - p2.x) < 2 && std::abs(p1.y - p2.y) < 2) {
-                //std::cout<<"COLLISION"<<std::endl;
-                v1.dx = (std::rand() % 50)/100.0 - 0.245;
-                v1.dy = (std::rand() % 50)/100.0 - 0.245;
-                v2.dx = (std::rand() % 50)/100.0 - 0.245;
-                v2.dy = (std::rand() % 50)/100.0 - 0.245;
+        Node node;
+        node.id = en1;
+        node.box.top = p1.y;
+        node.box.left = p1.x;
+        node.box.height = 2;
+        node.box.width = 2;
+        nodes.emplace_back(node);
+    }
+    for(auto& node:nodes) {
+        quadtree.add(&node);
+        //std::cout<<(int)node.id<<" "<<node.box.top<<" "<<node.box.left<<std::endl;
+    }
 
-                if (reg.has<ill>(en1) && reg.has<healty>(en2)) {
-                    if((std::rand() % 100) < PROB_AMMALARSI) {
-                        reg.remove<healty>(en2);
-                        reg.emplace<ill>(en2);
-                    }
-                }
+    /*quadTreeRects.clear();
+    for(auto&b : quadtree.getboxes()){
+        sf::RectangleShape r(sf::Vector2(b.width,b.height));
+        r.setPosition(b.left, b.top);
+        r.setFillColor(sf::Color::Transparent);
+        r.setOutlineColor(sf::Color::Yellow);
+        r.setOutlineThickness(1);
+        quadTreeRects.push_back(r);
+    }*/
+    
 
-                if (reg.has<ill>(en2) && reg.has<healty>(en1)) {
-                    if((std::rand() % 100) < PROB_AMMALARSI) {
-                        reg.remove<healty>(en1);
-                        reg.emplace<ill>(en1);
-                    }
-                }
+
+    auto intersections = quadtree.findAllIntersections();
+    //std::cout<<"intersection size:"<<intersections.size()<<std::endl;
+    for(auto& inter: intersections) {
+        auto & v1 = view.get<velocity>(inter.first->id); 
+        auto & v2 = view.get<velocity>(inter.second->id); 
+        //std::cout<<"COLLISION "<< (int)inter.first->id<<" "<< (int)inter.second->id<<std::endl;
+        
+
+        v1.dx = (std::rand() % 50)/100.0 - 0.245;
+        v1.dy = (std::rand() % 50)/100.0 - 0.245;
+        v2.dx = (std::rand() % 50)/100.0 - 0.245;
+        v2.dy = (std::rand() % 50)/100.0 - 0.245;
+
+        if (reg.has<ill>(inter.first->id) && reg.has<healty>(inter.second->id)) {
+            if((std::rand() % 100) < PROB_AMMALARSI) {
+                reg.remove<healty>(inter.second->id);
+                reg.emplace<ill>(inter.second->id);
+            }
+        }
+        if (reg.has<ill>(inter.second->id) && reg.has<healty>(inter.first->id)) {
+            if((std::rand() % 100) < PROB_AMMALARSI) {
+                reg.remove<healty>(inter.first->id);
+                reg.emplace<ill>(inter.first->id);
             }
         }
     }
@@ -138,6 +175,10 @@ void draw(sf::RenderWindow & w, entt::registry& reg) {
         va.append(sf::Vertex(sf::Vector2f(p.x, p.y), sf::Color(0,0,255)));   
     }
     w.draw(va);
+
+    /*for(auto &r:quadTreeRects) {
+        w.draw(r);
+    }*/
 }
 
 int main()
@@ -147,7 +188,7 @@ int main()
 
     initPopulation(registry);
     // create the window
-    sf::RenderWindow window(sf::VideoMode(640, 480), "Particles");
+    sf::RenderWindow window(sf::VideoMode(DIMX, DIMY), "Particles");
     window.setVerticalSyncEnabled(true);
     window.setFramerateLimit(50);
 
