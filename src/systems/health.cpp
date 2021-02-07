@@ -1,7 +1,7 @@
 #include "health.h"
 #include "parameters.h"
 #include "components/illness.h"
-#include <entt/src/entt/entity/registry.hpp>
+#include "entt/src/entt/entity/registry.hpp"
 
 void updateHealth(entt::registry& reg, sf::Time elapsed) {
     auto view = reg.view<ill>();
