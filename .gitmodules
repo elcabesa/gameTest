@@ -3,4 +3,4 @@
 	url = git@github.com:skypjack/entt.git
 [submodule "src/quadtree"]
 	path = src/quadtree
-	url = git@github.com:pvigier/Quadtree.git
+	url = git@github.com:elcabesa/Quadtree.git
