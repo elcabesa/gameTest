@@ -1,16 +1,16 @@
 #include <cmath>
 #include <iostream>
 #include <SFML/Graphics.hpp>
+
+#include "comp/illness.h"
+#include "comp/position.h"
+#include "comp/velocity.h"
+
 #include "entt/src/entt/entt.hpp"
+
 #include "quadtree/include/Quadtree.h"
 
-#define DIMX 800
-#define DIMY 400
-#define POPULATION 20000
-#define MALATI_INIZIALI 2
-#define PROB_AMMALARSI 20
-#define PROB_MORTE 3
-#define TEMPO_MALATTIA 20
+#include "parameters.h"
 
 std::vector<sf::RectangleShape> quadTreeRects;
 
@@ -20,31 +20,12 @@ struct Node
     entt::entity id;
 };
 
-struct position {
-    float x;
-    float y;
-};
-
-struct velocity {
-    float dx;
-    float dy;
-};
-
-struct ill {
-    float tempo = TEMPO_MALATTIA;
-};
-struct healty {
-};
-
-struct recovered {
-};
-
 void initPopulation(entt::registry& reg) {
-    for(auto i = 0u; i < POPULATION; ++i) {
+    for(auto i = 0u; i < population; ++i) {
         const auto entity = reg.create();
-        reg.emplace<position>(entity, float(std::rand() % DIMX), float(std::rand() % DIMY));
+        reg.emplace<position>(entity, float(std::rand() % dimX), float(std::rand() % dimY));
         reg.emplace<velocity>(entity, float((std::rand() % 50)/100.0 - 0.245), float((std::rand() % 50)/100.0 - 0.245));
-        if (std::rand() % 1000 < MALATI_INIZIALI) {
+        if (std::rand() % 1000 < illInitialPermill) {
             reg.emplace<ill>(entity);
         }
         else {
@@ -63,10 +44,10 @@ void updatePosition(entt::registry& reg) {
 
         // collision with borders
         if(p.x <= 0) { p.x = 0; v.dx *=-1;}
-        if(p.x >= DIMX) { p.x = DIMX; v.dx *=-1;}
+        if(p.x >= dimX) { p.x = dimX; v.dx *=-1;}
             
         if(p.y <= 0) { p.y = 0; v.dy *=-1;}
-        if(p.y >= DIMY) { p.y = DIMY; v.dy *=-1;}
+        if(p.y >= dimY) { p.y = dimY; v.dy *=-1;}
     }
 }
 
@@ -77,7 +58,7 @@ void updateHealth(entt::registry& reg, sf::Time elapsed) {
         p.tempo -= elapsed.asSeconds();
         if(p.tempo < 0) {
             reg.remove<ill>(e);
-            if((std::rand() % 100) >= PROB_MORTE) { 
+            if((std::rand() % 100) >= deathProbability) { 
                 reg.emplace<recovered>(e);
             }
         }
@@ -86,7 +67,7 @@ void updateHealth(entt::registry& reg, sf::Time elapsed) {
 
 void calcCollision(entt::registry& reg) {
 
-    auto box = quadtree::Box(0.0f, 0.0f, float(DIMX+2), float(DIMY+2));
+    auto box = quadtree::Box(0.0f, 0.0f, float(dimX+2), float(dimY+2));
     auto getBox = [](Node* node)
     {
         return node->box;
@@ -138,13 +119,13 @@ void calcCollision(entt::registry& reg) {
         v2.dy = (std::rand() % 50)/100.0 - 0.245;
 
         if (reg.has<ill>(inter.first->id) && reg.has<healty>(inter.second->id)) {
-            if((std::rand() % 100) < PROB_AMMALARSI) {
+            if((std::rand() % 100) < illProbability) {
                 reg.remove<healty>(inter.second->id);
                 reg.emplace<ill>(inter.second->id);
             }
         }
         if (reg.has<ill>(inter.second->id) && reg.has<healty>(inter.first->id)) {
-            if((std::rand() % 100) < PROB_AMMALARSI) {
+            if((std::rand() % 100) < illProbability) {
                 reg.remove<healty>(inter.first->id);
                 reg.emplace<ill>(inter.first->id);
             }
@@ -188,7 +169,7 @@ int main()
 
     initPopulation(registry);
     // create the window
-    sf::RenderWindow window(sf::VideoMode(DIMX, DIMY), "Particles");
+    sf::RenderWindow window(sf::VideoMode(dimX, dimY), "Particles");
     window.setVerticalSyncEnabled(true);
     window.setFramerateLimit(50);
 
