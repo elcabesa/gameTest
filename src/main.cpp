@@ -11,6 +11,8 @@
 #include "systems/movement.h"
 #include "systems/renderer.h"
 
+#include "utils/occupancy.h"
+
 #include "entt/src/entt/entt.hpp"
 
 #include "parameters.h"
@@ -30,30 +32,31 @@ void initPopulation(entt::registry& reg) {
 }
 
 void update(entt::registry& reg, sf::Time elapsed) {
+    static unsigned int i = 0;
     updatePosition(reg);
     calcCollision(reg);
     updateHealth(reg, elapsed);
-    std::cout<<"sani:"<<reg.view<healty>().size()<< "\tmalati:"<<reg.view<ill>().size()<<"\tmorti:"<<(reg.size() - reg.view<healty>().size() - reg.view<ill>().size() - reg.view<recovered>().size())<<"\tguariti:"<<reg.view<recovered>().size()<<std::endl;
+    if(++i >50) {
+        std::cout<<"sani:"<<reg.view<healty>().size()<< "\tmalati:"<<reg.view<ill>().size()<<"\tmorti:"<<(reg.size() - reg.view<healty>().size() - reg.view<ill>().size() - reg.view<recovered>().size())<<"\tguariti:"<<reg.view<recovered>().size()<<std::endl;
+        i = 0;
+    }
 }
 
 int main()
 {
-
+    cpuOccupancy occupancy;
     entt::registry registry;
 
     initPopulation(registry);
+
     // create the window
     sf::RenderWindow window(sf::VideoMode(dimX, dimY), "Particles");
     window.setVerticalSyncEnabled(true);
     window.setFramerateLimit(50);
 
-    // create the parti60000cle system
-    //ParticleSystem particles(200);
-
     // create a clock to track the elapsed time
     sf::Clock clock;
     sf::Clock occupancyClock;
-
     // run the main loop
     while (window.isOpen())
     {
@@ -65,11 +68,10 @@ int main()
             if(event.type == sf::Event::Closed)
                 window.close();
         }
-        
         sf::Time evtTime = occupancyClock.restart();
-        // update it
-        sf::Time elapsed = clock.restart();
-        update(registry, elapsed);
+
+        // update system
+        update(registry, clock.restart());
         
         sf::Time simTime = occupancyClock.restart();
 
@@ -81,7 +83,7 @@ int main()
         window.display();
         sf::Time displayTime = occupancyClock.restart();
         
-        std::cout<<"evt:"<<evtTime.asMicroseconds()<<" sim:"<<simTime.asMicroseconds()<<" draw:"<<drawTime.asMicroseconds()<<" display:"<<displayTime.asMicroseconds()<<std::endl;
+        occupancy.add(evtTime.asMicroseconds(), simTime.asMicroseconds(), drawTime.asMicroseconds(), displayTime.asMicroseconds());
     }
 
     return 0;
