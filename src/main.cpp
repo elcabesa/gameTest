@@ -6,6 +6,7 @@
 #include "components/position.h"
 #include "components/velocity.h"
 
+#include "systems/health.h"
 #include "systems/movement.h"
 
 #include "entt/src/entt/entt.hpp"
@@ -32,20 +33,6 @@ void initPopulation(entt::registry& reg) {
         }
         else {
             reg.emplace<healty>(entity);
-        }
-    }
-}
-
-void updateHealth(entt::registry& reg, sf::Time elapsed) {
-    auto view = reg.view<ill>();
-    for (const entt::entity e : view) {
-        auto & p =view.get<ill>(e);
-        p.tempo -= elapsed.asSeconds();
-        if(p.tempo < 0) {
-            reg.remove<ill>(e);
-            if((std::rand() % 100) >= deathProbability) { 
-                reg.emplace<recovered>(e);
-            }
         }
     }
 }
