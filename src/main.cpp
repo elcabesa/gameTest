@@ -18,12 +18,15 @@
 void initPopulation(entt::registry& reg) {
     for(auto i = 0u; i < population; ++i) {
         const auto entity = reg.create();
+        if( i == 0) {
+            reg.emplace<follow>(entity);
+        }
         reg.emplace<position>(entity, float(std::rand() % dimX), float(std::rand() % dimY));
         reg.emplace<velocity>(entity, float((std::rand() % 50)/100.0 - 0.245), float((std::rand() % 50)/100.0 - 0.245));
-        if (std::rand() % 1000 < illInitialPermill) {
+        /*if (std::rand() % 1000 < illInitialPermill) {
             reg.emplace<ill>(entity);
         }
-        else {
+        else */{
             reg.emplace<healty>(entity);
         }
     }
@@ -75,8 +78,9 @@ int main()
 
         // draw it
         window.clear();
-        draw(window, registry);
         //drawQuadTreeDebugInfo(window, getDebugRects());
+        draw(window, registry);
+        
         sf::Time drawTime = occupancyClock.restart();
         window.display();
         sf::Time displayTime = occupancyClock.restart();

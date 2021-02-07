@@ -6,4 +6,7 @@ struct position {
     float y;
 };
 
+struct follow {};
+struct highlight {};
+
 #endif

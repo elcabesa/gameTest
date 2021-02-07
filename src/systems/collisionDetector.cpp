@@ -11,14 +11,15 @@ std::vector<sf::RectangleShape> quadTreeRects;
 const std::vector<sf::RectangleShape>& getDebugRects() {
     return quadTreeRects;
 }
-
 struct Node
 {
     quadtree::Box<float> box;
     entt::entity id;
+    bool follow;
 };
 
 void calcCollision(entt::registry& reg) {
+    reg.clear<highlight>();
 
     auto box = quadtree::Box(0.0f, 0.0f, float(dimX+2), float(dimY+2));
     auto getBox = [](Node* node)
@@ -30,6 +31,7 @@ void calcCollision(entt::registry& reg) {
     auto view = reg.view<position, velocity>();
     std::vector<Node> nodes;
 
+    Node* followNode = nullptr;
     for (auto it = view.begin(); it!= view.end(); ++it) {
         auto& en1 = *it;
         auto & p1 =view.get<position>(en1); 
@@ -39,10 +41,15 @@ void calcCollision(entt::registry& reg) {
         node.box.left = p1.x;
         node.box.height = 2;
         node.box.width = 2;
+        node.follow = reg.has<follow>(en1);
         nodes.emplace_back(node);
+        
     }
     for(auto& node:nodes) {
         quadtree.add(&node);
+        if(node.follow) {
+            followNode = &node;
+        }
     }
 
     quadTreeRects.clear();
@@ -57,7 +64,11 @@ void calcCollision(entt::registry& reg) {
     
 
 
-    auto intersections = quadtree.findAllIntersections();
+    auto intersections = quadtree.findAllIntersections(followNode);
+    auto& tn = quadtree.getTestedNodes();
+    for( auto& n: tn) {
+        reg.emplace<highlight>(n->id);
+    }
     //std::cout<<"intersection size:"<<intersections.size()<<std::endl;
     for(auto& inter: intersections) {
         auto & v1 = view.get<velocity>(inter.first->id); 
@@ -70,7 +81,7 @@ void calcCollision(entt::registry& reg) {
         v2.dx = (std::rand() % 50)/100.0 - 0.245;
         v2.dy = (std::rand() % 50)/100.0 - 0.245;
 
-        if (reg.has<ill>(inter.first->id) && reg.has<healty>(inter.second->id)) {
+        /*if (reg.has<ill>(inter.first->id) && reg.has<healty>(inter.second->id)) {
             if((std::rand() % 100) < illProbability) {
                 reg.remove<healty>(inter.second->id);
                 reg.emplace<ill>(inter.second->id);
@@ -81,6 +92,6 @@ void calcCollision(entt::registry& reg) {
                 reg.remove<healty>(inter.first->id);
                 reg.emplace<ill>(inter.first->id);
             }
-        }
+        }*/
     }
 }
