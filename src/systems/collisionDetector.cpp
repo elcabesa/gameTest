@@ -28,19 +28,21 @@ void calcCollision(entt::registry& reg) {
     auto quadtree = quadtree::Quadtree<Node*, decltype(getBox)>(box, getBox);
 
     auto view = reg.view<position, velocity>();
+    
     std::vector<Node> nodes;
 
-    for (auto it = view.begin(); it!= view.end(); ++it) {
-        auto& en1 = *it;
-        auto & p1 =view.get<position>(en1); 
-        Node node;
-        node.id = en1;
+    Node node;
+    node.box.height = 2;
+    node.box.width = 2;
+
+    for (auto& en: view) {
+        auto & p1 = view.get<position>(en); 
+        node.id = en;
         node.box.top = p1.y;
         node.box.left = p1.x;
-        node.box.height = 2;
-        node.box.width = 2;
         nodes.emplace_back(node);
     }
+
     for(auto& node:nodes) {
         quadtree.add(&node);
     }
