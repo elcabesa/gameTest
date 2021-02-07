@@ -2,9 +2,11 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 
-#include "comp/illness.h"
-#include "comp/position.h"
-#include "comp/velocity.h"
+#include "components/illness.h"
+#include "components/position.h"
+#include "components/velocity.h"
+
+#include "systems/movement.h"
 
 #include "entt/src/entt/entt.hpp"
 
@@ -31,23 +33,6 @@ void initPopulation(entt::registry& reg) {
         else {
             reg.emplace<healty>(entity);
         }
-    }
-}
-
-void updatePosition(entt::registry& reg) {
-    auto view = reg.view<position, velocity>();
-    for (const entt::entity e : view) {
-        auto & p =view.get<position>(e); 
-        auto & v =view.get<velocity>(e); 
-        p.x += v.dx;
-        p.y += v.dy;
-
-        // collision with borders
-        if(p.x <= 0) { p.x = 0; v.dx *=-1;}
-        if(p.x >= dimX) { p.x = dimX; v.dx *=-1;}
-            
-        if(p.y <= 0) { p.y = 0; v.dy *=-1;}
-        if(p.y >= dimY) { p.y = dimY; v.dy *=-1;}
     }
 }
 
