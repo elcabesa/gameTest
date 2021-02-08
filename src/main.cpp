@@ -34,6 +34,7 @@ void initPopulation(entt::registry& reg) {
 void update(entt::registry& reg, sf::Time elapsed) {
     static unsigned int i = 0;
     updatePosition(reg);
+    worldBorderCollision(reg);
     calcCollision(reg);
     updateHealth(reg, elapsed);
     if(++i >50) {
