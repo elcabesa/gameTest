@@ -28,4 +28,6 @@ void cpuOccupancy::_print() const {
         << "% draw:" << 100.0 * _drwTime / total
         << "% display:" << 100.0 * _disTime / total
         << "%" << std::endl;
+    float fps = 50.0 / total * 1e6;
+    std::cout<<"FPS:"<<fps<< " ("<<total/50 <<"us)"<<std::endl;
 }
