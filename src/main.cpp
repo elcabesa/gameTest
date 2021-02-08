@@ -60,7 +60,7 @@ int main()
     // run the main loop
     while (window.isOpen())
     {
-        occupancyClock.restart();
+        sf::Time displayTime = occupancyClock.restart();
         // handle events
         sf::Event event;
         while (window.pollEvent(event))
@@ -81,7 +81,7 @@ int main()
         //drawQuadTreeDebugInfo(window, getDebugRects());
         sf::Time drawTime = occupancyClock.restart();
         window.display();
-        sf::Time displayTime = occupancyClock.restart();
+        
         
         occupancy.add(evtTime.asMicroseconds(), simTime.asMicroseconds(), drawTime.asMicroseconds(), displayTime.asMicroseconds());
     }
