@@ -6,7 +6,7 @@ void cpuOccupancy::add(int64_t evtTime,int64_t simTime, int64_t drwTime, int64_t
     _simTime += simTime;
     _drwTime += drwTime;
     _disTime += disTime;
-    if (++_n > 50) {
+    if (++_n >= 50) {
         _print();
         _clear();
     }
