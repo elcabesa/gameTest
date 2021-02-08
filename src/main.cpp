@@ -2,6 +2,7 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 
+#include "components/collisionBox.h"
 #include "components/illness.h"
 #include "components/position.h"
 #include "components/velocity.h"
@@ -20,8 +21,11 @@
 void initPopulation(entt::registry& reg) {
     for(auto i = 0u; i < population; ++i) {
         const auto entity = reg.create();
-        reg.emplace<position>(entity, float(std::rand() % dimX), float(std::rand() % dimY));
+        float x = float(std::rand() % dimX);
+        float y = float(std::rand() % dimY);
+        reg.emplace<position>(entity, x, y);
         reg.emplace<velocity>(entity, float((std::rand() % 50)/100.0 - 0.245), float((std::rand() % 50)/100.0 - 0.245));
+        reg.emplace<collisionBox>(entity, collisionBox(x, y, 2, 2));
         if (std::rand() % 1000 < illInitialPermill) {
             reg.emplace<ill>(entity);
         }
@@ -35,6 +39,8 @@ void update(entt::registry& reg, sf::Time elapsed) {
     static unsigned int i = 0;
     updatePosition(reg);
     worldBorderCollision(reg);
+    updateCollisionBoxes(reg);
+
     calcCollision(reg);
     updateHealth(reg, elapsed);
     if(++i >50) {

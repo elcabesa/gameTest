@@ -5,5 +5,6 @@
 
 void updatePosition(entt::registry &reg);
 void worldBorderCollision(entt::registry &reg);
+void updateCollisionBoxes(entt::registry &reg);
 
 #endif
