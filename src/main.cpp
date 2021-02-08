@@ -35,13 +35,13 @@ void initPopulation(entt::registry& reg) {
     }
 }
 
-void update(entt::registry& reg, sf::Time elapsed) {
+void update(entt::registry& reg, sf::Time elapsed, CollisionDetector& cd) {
     static unsigned int i = 0;
     updatePosition(reg);
     worldBorderCollision(reg);
     updateCollisionBoxes(reg);
 
-    calcCollision(reg);
+    cd.calcCollision();
     updateHealth(reg, elapsed);
     if(++i >50) {
         std::cout<<"sani:"<<reg.view<healty>().size()<< "\tmalati:"<<reg.view<ill>().size()<<"\tmorti:"<<(reg.size() - reg.view<healty>().size() - reg.view<ill>().size() - reg.view<recovered>().size())<<"\tguariti:"<<reg.view<recovered>().size()<<std::endl;
@@ -53,6 +53,7 @@ int main()
 {
     cpuOccupancy occupancy;
     entt::registry registry;
+    CollisionDetector collDet(registry);
 
     initPopulation(registry);
 
@@ -78,7 +79,7 @@ int main()
         sf::Time evtTime = occupancyClock.restart();
 
         // update system
-        update(registry, clock.restart());
+        update(registry, clock.restart(), collDet);
         
         sf::Time simTime = occupancyClock.restart();
 

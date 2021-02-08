@@ -6,17 +6,16 @@
 #include "entt/src/entt/entity/registry.hpp"
 #include "quadtree/include/Quadtree.h"
 
-std::vector<sf::RectangleShape> quadTreeRects;
+CollisionDetector::CollisionDetector(entt::registry& reg): _reg(reg) {}
 
-const std::vector<sf::RectangleShape>& getDebugRects() {
-    return quadTreeRects;
+const std::vector<sf::RectangleShape>& CollisionDetector::getDebugRects() const {
+    return _quadTreeRects;
 }
 
-void calcCollision(entt::registry& reg) {
-
+void CollisionDetector::calcCollision() {
     auto box = quadtree::Box(0.0f, 0.0f, float(dimX + 2), float(dimY + 2));
     
-    auto view = reg.view<collisionBox, velocity>();
+    auto view = _reg.view<collisionBox, velocity>();
     
     auto getBox = [&](entt::entity id)
     {
@@ -29,14 +28,14 @@ void calcCollision(entt::registry& reg) {
         quadtree.add(en);
     }
 
-    quadTreeRects.clear();
+    _quadTreeRects.clear();
     for(auto&b : quadtree.getboxes()){
         sf::RectangleShape r(sf::Vector2(b.width,b.height));
         r.setPosition(b.left, b.top);
         r.setFillColor(sf::Color::Transparent);
         r.setOutlineColor(sf::Color::Yellow);
         r.setOutlineThickness(1);
-        quadTreeRects.push_back(r);
+        _quadTreeRects.push_back(r);
     }
     
 
@@ -54,16 +53,16 @@ void calcCollision(entt::registry& reg) {
         v2.dx = (std::rand() % 50)/100.0 - 0.245;
         v2.dy = (std::rand() % 50)/100.0 - 0.245;
 
-        if (reg.has<ill>(inter.first) && reg.has<healty>(inter.second)) {
+        if (_reg.has<ill>(inter.first) && _reg.has<healty>(inter.second)) {
             if((std::rand() % 100) < illProbability) {
-                reg.remove<healty>(inter.second);
-                reg.emplace<ill>(inter.second);
+                _reg.remove<healty>(inter.second);
+                _reg.emplace<ill>(inter.second);
             }
         }
-        if (reg.has<ill>(inter.second) && reg.has<healty>(inter.first)) {
+        if (_reg.has<ill>(inter.second) && _reg.has<healty>(inter.first)) {
             if((std::rand() % 100) < illProbability) {
-                reg.remove<healty>(inter.first);
-                reg.emplace<ill>(inter.first);
+                _reg.remove<healty>(inter.first);
+                _reg.emplace<ill>(inter.first);
             }
         }
     }
