@@ -63,8 +63,8 @@ int quadTreeNode::_getQuadrant(const sf::Rect<float>& valueRect) {
 }
 
 void quadTreeNode::add(std::size_t depth, const Node& value) {
-
-    assert(_rect.contains(value->rect));
+    assert(_rect.contains(value.rect.left, value.rect.top));
+    assert(_rect.contains(value.rect.left + value.rect.width, value.rect.top + value.rect.height));
     if (_isLeaf()) {
         // Insert the value in this node if possible
         if (depth >= MaxDepth || _values.size() < Threshold) {

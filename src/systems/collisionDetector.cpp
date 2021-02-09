@@ -14,7 +14,7 @@ const std::vector<sf::RectangleShape>& getDebugRects() {
 }
 
 void calcCollision(entt::registry& reg) {
-    auto quadtree = quadTree(sf::Rect<float>(0.0f, 0.0f, float(dimX+2), float(dimY+2)));
+    auto quadtree = quadTree(sf::Rect<float>(0.0f, 0.0f, float(dimX+2.001), float(dimY+2.001)));
 
 
     Node node;
