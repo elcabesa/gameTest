@@ -11,9 +11,34 @@
 static constexpr auto Threshold = std::size_t(16);
 static constexpr auto MaxDepth = std::size_t(8);
 
+class Rect {
+public:
+    Rect(float top = 0, float left = 0, float height = 0, float width = 0);
+    Rect(const sf::Vector2<float>& pos, const sf::Vector2<float>& size);
+    float& top();
+    float top() const;
+    float& left();
+    float left() const;
+    float bottom() const;
+    float right() const;
+    float& width();
+    float width() const;
+    float& height();
+    float height() const;
+
+    bool contains(const Rect& other) const;
+    bool intersects(const Rect& other) const;
+
+private:
+    float _top;
+    float _left;
+    float _height;
+    float _width;
+};
+
 struct Node
 {
-    sf::Rect<float> rect;
+    Rect rect;
     entt::entity id;
 };
 
@@ -23,28 +48,29 @@ public:
     
     void add(std::size_t depth, const Node& value);
     void findAllIntersections(std::vector<std::pair<entt::entity, entt::entity>>& intersections) const;
-    void getRects(std::vector<sf::Rect<float>>& boxes) const;
-    quadTreeNode(const sf::Rect<float>& rect);
+    void getRects(std::vector<Rect>& boxes) const;
+    quadTreeNode(const Rect& rect, quadTreeNode* parent);
 private:
         std::array<std::unique_ptr<quadTreeNode>, 4> _children;
         std::vector<Node> _values;
-        sf::Rect<float> _rect;
+        Rect _rect;
+        quadTreeNode* const _parent;
 
         bool _isLeaf() const;
         void _split();
 
-        sf::Rect<float> _computeRect(int i);
-        int _getQuadrant(const sf::Rect<float>& valueRect);
+        Rect _computeRect(int i);
+        int _getQuadrant(const Rect& valueRect);
         void _findIntersectionsInDescendants(const Node& value, std::vector<std::pair<entt::entity, entt::entity>>& intersections) const;
 
 };
 
 class quadTree {
 public:
-    quadTree(const sf::Rect<float>& rect);
+    quadTree(const Rect& rect);
     void add(const Node& value);
     std::vector<std::pair<entt::entity, entt::entity>> findAllIntersections() const;
-    std::vector<sf::Rect<float>> getRects() const;
+    std::vector<Rect> getRects() const;
 private:
     std::unique_ptr<quadTreeNode> _root;
 };

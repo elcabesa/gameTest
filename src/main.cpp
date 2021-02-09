@@ -52,8 +52,8 @@ int main()
 
     // create the window
     sf::RenderWindow window(sf::VideoMode(dimX, dimY), "Particles");
-    window.setVerticalSyncEnabled(true);
-    window.setFramerateLimit(500);
+    //window.setVerticalSyncEnabled(true);
+    //window.setFramerateLimit(50);
 
     // create a clock to track the elapsed time
     sf::Clock clock;
@@ -79,10 +79,9 @@ int main()
         // draw it
         window.clear();
         draw(window, registry);
-        drawQuadTreeDebugInfo(window, getDebugRects());
+        //drawQuadTreeDebugInfo(window, getDebugRects());
         sf::Time drawTime = occupancyClock.restart();
         window.display();
-        
         
         occupancy.add(evtTime.asMicroseconds(), simTime.asMicroseconds(), drawTime.asMicroseconds(), displayTime.asMicroseconds());
     }
