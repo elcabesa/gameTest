@@ -20,30 +20,32 @@ struct Node
 class quadTreeNode
 {
 public:
-    bool isLeaf() const;
-    void add(std::size_t depth, const sf::Rect<float>& rect, const Node* value);
-    void findAllIntersections(const sf::Rect<float>& rect, std::vector<std::pair<entt::entity, entt::entity>>& intersections) const;
-    void getRects(const sf::Rect<float>& rect, std::vector<sf::Rect<float>>& boxes) const;
+    
+    void add(std::size_t depth, const Node& value);
+    void findAllIntersections(std::vector<std::pair<entt::entity, entt::entity>>& intersections) const;
+    void getRects(std::vector<sf::Rect<float>>& boxes) const;
+    quadTreeNode(const sf::Rect<float>& rect);
 private:
         std::array<std::unique_ptr<quadTreeNode>, 4> _children;
-        std::vector<const Node*> _values;
+        std::vector<Node> _values;
+        sf::Rect<float> _rect;
 
-        void _split(const sf::Rect<float>& rect);
+        bool _isLeaf() const;
+        void _split();
 
-        static sf::Rect<float> _computeRect(const sf::Rect<float>& rect, int i);
-        static int _getQuadrant(const sf::Rect<float>& nodeRect, const sf::Rect<float>& valueRect);
-        void _findIntersectionsInDescendants(const Node* value, const sf::Rect<float>& rect, std::vector<std::pair<entt::entity, entt::entity>>& intersections) const;
+        sf::Rect<float> _computeRect(int i);
+        int _getQuadrant(const sf::Rect<float>& valueRect);
+        void _findIntersectionsInDescendants(const Node& value, std::vector<std::pair<entt::entity, entt::entity>>& intersections) const;
 
 };
 
 class quadTree {
 public:
     quadTree(const sf::Rect<float>& rect);
-    void add(const Node* value);
+    void add(const Node& value);
     std::vector<std::pair<entt::entity, entt::entity>> findAllIntersections() const;
     std::vector<sf::Rect<float>> getRects() const;
 private:
-    const sf::Rect<float> _rect;
     std::unique_ptr<quadTreeNode> _root;
 };
 

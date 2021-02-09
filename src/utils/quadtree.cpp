@@ -1,12 +1,14 @@
 #include "quadtree.h"
 
-bool quadTreeNode::isLeaf() const {
+quadTreeNode::quadTreeNode(const sf::Rect<float>& rect):_rect{rect} {}
+
+bool quadTreeNode::_isLeaf() const {
     return !static_cast<bool>(_children[0]);
 }
 
-sf::Rect<float> quadTreeNode::_computeRect(const sf::Rect<float>& rect, int i) {
-    sf::Vector2<float> origin(rect.left, rect.top);
-    sf::Vector2<float> childSize(rect.width / 2.0f, rect.height / 2.0f);
+sf::Rect<float> quadTreeNode::_computeRect(int i) {
+    sf::Vector2<float> origin(_rect.left, _rect.top);
+    sf::Vector2<float> childSize(_rect.width / 2.0f, _rect.height / 2.0f);
 
     switch (i) {
         // North West
@@ -27,8 +29,8 @@ sf::Rect<float> quadTreeNode::_computeRect(const sf::Rect<float>& rect, int i) {
     }
 }
 
-int quadTreeNode::_getQuadrant(const sf::Rect<float>& nodeRect, const sf::Rect<float>& valueRect) {
-    sf::Vector2<float> center(nodeRect.left + nodeRect.width /2.0f, nodeRect.top + nodeRect.height /2.0f);
+int quadTreeNode::_getQuadrant(const sf::Rect<float>& valueRect) {
+    sf::Vector2<float> center(_rect.left + _rect.width /2.0f, _rect.top + _rect.height /2.0f);
     // West
     if (valueRect.left + valueRect.width < center.x)
     {
@@ -60,23 +62,23 @@ int quadTreeNode::_getQuadrant(const sf::Rect<float>& nodeRect, const sf::Rect<f
         return -1;
 }
 
-void quadTreeNode::add(std::size_t depth, const sf::Rect<float>& rect, const Node* value) {
+void quadTreeNode::add(std::size_t depth, const Node& value) {
 
-    assert(rect.contains(value->rect));
-    if (isLeaf()) {
+    assert(_rect.contains(value->rect));
+    if (_isLeaf()) {
         // Insert the value in this node if possible
         if (depth >= MaxDepth || _values.size() < Threshold) {
             _values.push_back(value);
         } else {
             // Otherwise, we split and we try again
-            _split(rect);
-            add(depth, rect, value);
+            _split();
+            add(depth, value);
         }
     } else {
-        auto i = _getQuadrant(rect, value->rect);
+        auto i = _getQuadrant(value.rect);
         // Add the value in a child if the value is entirely contained in it
         if (i != -1) {
-            _children[static_cast<std::size_t>(i)].get()->add(depth + 1, _computeRect(rect, i), value);
+            _children[static_cast<std::size_t>(i)].get()->add(depth + 1, value);
         } else {
             // Otherwise, we add the value in the current node
             _values.push_back(value);
@@ -84,20 +86,23 @@ void quadTreeNode::add(std::size_t depth, const sf::Rect<float>& rect, const Nod
     }
 }
 
-void quadTreeNode::_split(const sf::Rect<float>& rect) {
-    assert(isLeaf() && "Only leaves can be split");
+void quadTreeNode::_split() {
+    assert(_isLeaf() && "Only leaves can be split");
     
     // Create childrens
+    unsigned i = 0;
     for (auto& child : _children) {
-        child = std::make_unique<quadTreeNode>();
+        child = std::make_unique<quadTreeNode>(_computeRect(i));
+        ++i;
     }
 
+
     // Assign values to childrens
-    auto newValues = std::vector<const Node*>(); // New values for this node
+    auto newValues = std::vector<Node>(); // New values for this node
 
     for (const auto& value : _values)
     {
-        auto i = _getQuadrant(rect, value->rect);
+        auto i = _getQuadrant(value.rect);
         if (i != -1) {
             _children[static_cast<std::size_t>(i)]->_values.push_back(value);
         }
@@ -108,26 +113,25 @@ void quadTreeNode::_split(const sf::Rect<float>& rect) {
     _values = std::move(newValues);
 }
 
-void quadTreeNode::findAllIntersections(const sf::Rect<float>& rect, std::vector<std::pair<entt::entity, entt::entity>>& intersections) const
+void quadTreeNode::findAllIntersections(std::vector<std::pair<entt::entity, entt::entity>>& intersections) const
 {
     // Find intersections between values stored in this node
     // Make sure to not report the same intersection twice
     for (auto i = std::size_t(0); i < _values.size(); ++i) {
         for (auto j = std::size_t(0); j < i; ++j) {
-            if (_values[i]->rect.intersects(_values[j]->rect)) {
-                intersections.emplace_back(_values[i]->id, _values[j]->id);
+            if (_values[i].rect.intersects(_values[j].rect)) {
+                intersections.emplace_back(_values[i].id, _values[j].id);
             }
         }
     }
 
-    if (!isLeaf()) {
+    if (!_isLeaf()) {
         // Values in this node can intersect values in descendants
         unsigned int i = 0;
         for (const auto& child : _children) {
             for (const auto& value : _values) {
-                auto childRect = _computeRect(rect, i);
-                if (value->rect.intersects(childRect)) {
-                    child.get()->_findIntersectionsInDescendants(value, childRect, intersections);
+                if (value.rect.intersects(child->_rect)) {
+                    child->_findIntersectionsInDescendants(value, intersections);
                 }
             }
             ++i;
@@ -135,63 +139,61 @@ void quadTreeNode::findAllIntersections(const sf::Rect<float>& rect, std::vector
         // Find intersections in children
         i = 0;
         for (const auto& child : _children) {
-            child.get()->findAllIntersections(_computeRect(rect, i), intersections);
+            child->findAllIntersections(intersections);
             ++i;
         }
     }
 }
 
-void quadTreeNode::_findIntersectionsInDescendants(const Node* value, const sf::Rect<float>& rect, std::vector<std::pair<entt::entity, entt::entity>>& intersections) const
+void quadTreeNode::_findIntersectionsInDescendants(const Node& value, std::vector<std::pair<entt::entity, entt::entity>>& intersections) const
 {
     // Test against the values stored in this node
     for (const auto& other : _values) {
-        if (value->rect.intersects(other->rect)) {
-            intersections.emplace_back(value->id, other->id);
+        if (value.rect.intersects(other.rect)) {
+            intersections.emplace_back(value.id, other.id);
         }
     }
     // Test against values stored into descendants of this node
-    if (!isLeaf()) {
+    if (!_isLeaf()) {
         unsigned int i = 0;
         for (const auto& child : _children) {
-            auto childRect = _computeRect(rect, i);
-            if (value->rect.intersects(childRect)) {
-                child->_findIntersectionsInDescendants(value, childRect, intersections);
+            if (value.rect.intersects(child->_rect)) {
+                child->_findIntersectionsInDescendants(value, intersections);
             }
             ++i;
         }
     }
 }
 
-void quadTreeNode::getRects(const sf::Rect<float>& rect, std::vector<sf::Rect<float>>& boxes) const
+void quadTreeNode::getRects(std::vector<sf::Rect<float>>& boxes) const
 {
-    if(isLeaf()) {
-        boxes.emplace_back(rect);
+    if(_isLeaf()) {
+        boxes.emplace_back(_rect);
     }
     else {
-        for(unsigned int i = 0; i < 4; ++i) {
-            _children[i].get()->getRects(_computeRect(rect, i), boxes); 
+        for(const auto& child: _children) {
+            child->getRects(boxes); 
         }
     }
 }
 
 
 quadTree::quadTree(const sf::Rect<float>& rect):
-    _rect{rect}, 
-    _root{std::make_unique<quadTreeNode>()}
+    _root{std::make_unique<quadTreeNode>(rect)}
 {}
 
-void quadTree::add(const Node* const n) {
-    _root->add(0, _rect, n);
+void quadTree::add(const Node& n) {
+    _root->add(0, n);
 }
 
 std::vector<std::pair<entt::entity, entt::entity>> quadTree::findAllIntersections() const {
     auto intersections = std::vector<std::pair<entt::entity, entt::entity>>();
-    _root.get()->findAllIntersections(_rect, intersections);
+    _root.get()->findAllIntersections(intersections);
     return intersections;
 }
 
 std::vector<sf::Rect<float>> quadTree::getRects() const {
     std::vector<sf::Rect<float>> boxes;
-    _root.get()->getRects(_rect, boxes);
+    _root.get()->getRects(boxes);
     return boxes;
 }
