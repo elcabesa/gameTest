@@ -1,11 +1,11 @@
-#ifndef OCCUPANCY_H
-#define OCCUPANCY_H
+#ifndef STATISTICS_H
+#define STATISTICS_H
 
 #include <cstdint>
 #include <SFML/System/Clock.hpp>
 
 //TODO rename statistics
-class cpuOccupancy{
+class EngineStatistics{
 public:
     void print();
     void addDisTime();

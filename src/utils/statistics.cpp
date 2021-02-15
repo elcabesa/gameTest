@@ -1,37 +1,38 @@
 #include <iostream>
-#include "occupancy.h"
+#include "statistics.h"
 
 #include <SFML/System/Time.hpp>
 
-void cpuOccupancy::addDisTime() {
+void EngineStatistics::addDisTime() {
     _disTime += _clk.restart().asMicroseconds();
 }
 
-void cpuOccupancy::addEvtTime() {
+void EngineStatistics::addEvtTime() {
     _evtTime += _clk.restart().asMicroseconds();
 }
 
-void cpuOccupancy::addSimTime() {
+void EngineStatistics::addSimTime() {
     ++_sims;
     _simTime += _clk.restart().asMicroseconds();
 }
 
-void cpuOccupancy::addDrwTime() {
+void EngineStatistics::addDrwTime() {
     ++_frames;
     _drwTime += _clk.restart().asMicroseconds();
 }
-int64_t cpuOccupancy::_getTotalTime() const {
+
+int64_t EngineStatistics::_getTotalTime() const {
     return _evtTime + _simTime + _drwTime + _disTime;
 }
 
-void cpuOccupancy::print() {
+void EngineStatistics::print() {
     if (_getTotalTime() >= 1000000) {
         _print();
         _clear();
     }
 }
 
-void cpuOccupancy::_clear() {
+void EngineStatistics::_clear() {
     _evtTime = 0;
     _simTime = 0;
     _drwTime = 0;
@@ -40,7 +41,7 @@ void cpuOccupancy::_clear() {
     _sims = 0;
 }
 
-void cpuOccupancy::_print() const {
+void EngineStatistics::_print() const {
     int64_t total = _getTotalTime();
     std::cout 
         << "evt:" << 100.0 * _evtTime / total

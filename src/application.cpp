@@ -17,29 +17,36 @@
 Application::Application()
 : _window(sf::VideoMode(dimX, dimY), "Simulator", sf::Style::Resize | sf::Style::Close) {
     // create the window
-    //window.setVerticalSyncEnabled(true);
-    //window.setFramerateLimit(50);
+    //_window.setVerticalSyncEnabled(true);
+    _window.setFramerateLimit(fps);
 }
 
 
 
 
 void Application::run() {
-    //todo move inside workd/game
+    const sf::Time TimePerFrame = sf::seconds(1.f/simSpeed);
+
+    //todo move inside world/game
     _initPopulation();
 
     // create a clock to track the elapsed time
     _updateDt.restart();
     // run the main loop
+    sf::Time timeSinceLastUpdate = sf::Time::Zero;
     while (_window.isOpen())
     {
-        _occupancy.addDisTime();
+        _statistics.addDisTime();
 
-        _processInput();
-        _update(_updateDt.restart());
+        timeSinceLastUpdate += _updateDt.restart();
+        while (timeSinceLastUpdate > TimePerFrame) {
+            timeSinceLastUpdate -= TimePerFrame;
+			_processInput();
+			_update(TimePerFrame);
+		}
         _render();
         
-        _occupancy.print();
+        _statistics.print();
     }
 }
 
@@ -65,28 +72,30 @@ void Application::_processInput() {
             _window.close();
         }
     }
-    _occupancy.addEvtTime();
+    _statistics.addEvtTime();
 }
 
 void Application::_update(sf::Time dt) {
-    static unsigned int i = 0;
+    static sf::Time elapsed = sf::Time::Zero;
     updatePosition(_registry);
     worldBorderCollision(_registry);
     calcCollision(_registry);
     updateHealth(_registry, dt);
-    //TODO prit it every 1s indipendenlty from fps
-    if (++i > 50) {
+
+    elapsed += dt;
+    if (elapsed.asSeconds() >= 1.f) {
+        //TODO insert a method in the world
         std::cout<<"sani:"<<_registry.view<healty>().size()<< "\tmalati:"<<_registry.view<ill>().size()<<"\tmorti:"<<(_registry.size() - _registry.view<healty>().size() - _registry.view<ill>().size() - _registry.view<recovered>().size())<<"\tguariti:"<<_registry.view<recovered>().size()<<std::endl;
-        i = 0;
+        elapsed -= sf::seconds(1.f);
     }
-    _occupancy.addSimTime();
+    _statistics.addSimTime();
 }
 
-//TODO add interpolation and decoupling to renderer
+//TODO add lagtime
 void Application::_render() {
     _window.clear();
     draw(_window, _registry);
     //drawQuadTreeDebugInfo(_window, getDebugRects());
-    _occupancy.addDrwTime();
+    _statistics.addDrwTime();
     _window.display();
 }
