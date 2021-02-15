@@ -6,7 +6,7 @@
 
 #include "entt/src/entt/entt.hpp"
 
-#include "utils/occupancy.h"
+#include "utils/statistics.h"
 
 class Application {
 public:
@@ -18,7 +18,7 @@ private:
     entt::registry _registry;
 
     sf::Clock _updateDt;
-    cpuOccupancy _occupancy;
+    EngineStatistics _statistics;
 
     // TODO move inside game/world
     void _initPopulation();

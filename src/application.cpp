@@ -33,13 +33,13 @@ void Application::run() {
     // run the main loop
     while (_window.isOpen())
     {
-        _occupancy.addDisTime();
+        _statistics.addDisTime();
 
         _processInput();
         _update(_updateDt.restart());
         _render();
         
-        _occupancy.print();
+        _statistics.print();
     }
 }
 
@@ -65,21 +65,23 @@ void Application::_processInput() {
             _window.close();
         }
     }
-    _occupancy.addEvtTime();
+    _statistics.addEvtTime();
 }
 
 void Application::_update(sf::Time dt) {
-    static unsigned int i = 0;
+    static sf::Time elapsed(sf::seconds(0.f));
     updatePosition(_registry);
     worldBorderCollision(_registry);
     calcCollision(_registry);
     updateHealth(_registry, dt);
-    //TODO prit it every 1s indipendenlty from fps
-    if (++i > 50) {
+    
+    elapsed += dt;
+    if (elapsed.asSeconds() >= 1.f) {
+        //TODO insert a method in the world
         std::cout<<"sani:"<<_registry.view<healty>().size()<< "\tmalati:"<<_registry.view<ill>().size()<<"\tmorti:"<<(_registry.size() - _registry.view<healty>().size() - _registry.view<ill>().size() - _registry.view<recovered>().size())<<"\tguariti:"<<_registry.view<recovered>().size()<<std::endl;
-        i = 0;
+        elapsed -= sf::seconds(1.f);
     }
-    _occupancy.addSimTime();
+    _statistics.addSimTime();
 }
 
 //TODO add interpolation and decoupling to renderer
@@ -87,6 +89,6 @@ void Application::_render() {
     _window.clear();
     draw(_window, _registry);
     //drawQuadTreeDebugInfo(_window, getDebugRects());
-    _occupancy.addDrwTime();
+    _statistics.addDrwTime();
     _window.display();
 }
