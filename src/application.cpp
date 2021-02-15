@@ -17,26 +17,33 @@
 Application::Application()
 : _window(sf::VideoMode(dimX, dimY), "Simulator", sf::Style::Resize | sf::Style::Close) {
     // create the window
-    //window.setVerticalSyncEnabled(true);
-    //window.setFramerateLimit(50);
+    //_window.setVerticalSyncEnabled(true);
+    _window.setFramerateLimit(fps);
 }
 
 
 
 
 void Application::run() {
-    //todo move inside workd/game
+    const sf::Time TimePerFrame = sf::seconds(1.f/simSpeed);
+
+    //todo move inside world/game
     _initPopulation();
 
     // create a clock to track the elapsed time
     _updateDt.restart();
     // run the main loop
+    sf::Time timeSinceLastUpdate = sf::Time::Zero;
     while (_window.isOpen())
     {
         _statistics.addDisTime();
 
-        _processInput();
-        _update(_updateDt.restart());
+        timeSinceLastUpdate += _updateDt.restart();
+        while (timeSinceLastUpdate > TimePerFrame) {
+            timeSinceLastUpdate -= TimePerFrame;
+			_processInput();
+			_update(TimePerFrame);
+		}
         _render();
         
         _statistics.print();
@@ -69,12 +76,12 @@ void Application::_processInput() {
 }
 
 void Application::_update(sf::Time dt) {
-    static sf::Time elapsed(sf::seconds(0.f));
+    static sf::Time elapsed = sf::Time::Zero;
     updatePosition(_registry);
     worldBorderCollision(_registry);
     calcCollision(_registry);
     updateHealth(_registry, dt);
-    
+
     elapsed += dt;
     if (elapsed.asSeconds() >= 1.f) {
         //TODO insert a method in the world
@@ -84,7 +91,7 @@ void Application::_update(sf::Time dt) {
     _statistics.addSimTime();
 }
 
-//TODO add interpolation and decoupling to renderer
+//TODO add lagtime
 void Application::_render() {
     _window.clear();
     draw(_window, _registry);

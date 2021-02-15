@@ -3,8 +3,12 @@
 
 //TODO create a class/namespace
 
-constexpr unsigned int dimX = 800;
-constexpr unsigned int dimY = 400;
+constexpr unsigned int dimX = 1024;
+constexpr unsigned int dimY = 768;
+
+constexpr float fps = 60.f;
+constexpr float simSpeed = 100.f;
+
 
 constexpr unsigned int population = 20000;
 constexpr unsigned int illInitialPermill = 2;
