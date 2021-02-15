@@ -1,6 +1,8 @@
 #ifndef PARAMETERS_H
 #define PARAMETERS_H
 
+//TODO create a class/namespace
+
 constexpr unsigned int dimX = 800;
 constexpr unsigned int dimY = 400;
 
