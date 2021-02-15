@@ -1,5 +1,5 @@
 
-add_executable(sfml main.cpp )
+add_executable(sfml main.cpp application.cpp )
 target_link_libraries (sfml sfml-graphics sfml-window sfml-system)
 
 add_subdirectory(systems)
