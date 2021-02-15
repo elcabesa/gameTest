@@ -15,7 +15,8 @@
 
 //TODO find a good name for application
 Application::Application()
-: _window(sf::VideoMode(dimX, dimY), "Simulator", sf::Style::Resize | sf::Style::Close) {
+: _window(sf::VideoMode(dimX, dimY), "Simulator", sf::Style::Resize | sf::Style::Close) 
+, _isFullScreen{false} {
     // create the window
     //_window.setVerticalSyncEnabled(true);
     _window.setFramerateLimit(fps);
@@ -68,7 +69,13 @@ void Application::_processInput() {
     // handle events
     sf::Event event;
     while (_window.pollEvent(event)) {
-        if(event.type == sf::Event::Closed) {
+        if (event.type == sf::Event::KeyPressed) {
+            if (event.key.code == sf::Keyboard::F11) {
+                _isFullScreen = !_isFullScreen;
+                _window.create( _isFullScreen ? sf::VideoMode::getDesktopMode() : sf::VideoMode(dimX, dimY), "Simulator", _isFullScreen ? sf::Style::Fullscreen : sf::Style::Resize | sf::Style::Close);
+            }
+        }
+        if (event.type == sf::Event::Closed) {
             _window.close();
         }
     }

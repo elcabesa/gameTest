@@ -14,6 +14,7 @@ public:
     void run();
 private:
     sf::RenderWindow _window;
+    bool _isFullScreen;
     // TODO move inside game/world
     entt::registry _registry;
 
