@@ -16,10 +16,22 @@
 //TODO find a good name for application
 Application::Application()
 : _window(sf::VideoMode(dimX, dimY), "Simulator", sf::Style::Resize | sf::Style::Close) 
-, _isFullScreen{false} {
+, _isFullScreen{false}
+, _gui(_window)
+, _buttonPosition{0}
+, _animateButton{false}
+, _hideButton{false} {
     // create the window
     //_window.setVerticalSyncEnabled(true);
     _window.setFramerateLimit(fps);
+
+    _gui.setAbsoluteViewport({0, 0, dimX, dimY});
+    tgui::Button::Ptr container = tgui::Button::create();
+    container->setPosition(_buttonPosition, 0);
+    container->setSize(300, 100);
+    container->setText("ciao");
+    _gui.add(container, "button");
+    container->onPress([&]{ _hideButton = !_hideButton; _animateButton = true; });
 }
 
 
@@ -69,11 +81,17 @@ void Application::_processInput() {
     // handle events
     sf::Event event;
     while (_window.pollEvent(event)) {
+        // program events
         if (event.type == sf::Event::KeyPressed) {
             if (event.key.code == sf::Keyboard::F11) {
                 _isFullScreen = !_isFullScreen;
                 _window.create( _isFullScreen ? sf::VideoMode::getDesktopMode() : sf::VideoMode(dimX, dimY), "Simulator", _isFullScreen ? sf::Style::Fullscreen : sf::Style::Resize | sf::Style::Close);
             }
+        }
+
+        if (!_gui.handleEvent(event)) {
+            std::cout<<"event"<<std::endl;
+            // TODO handle events for the game
         }
         if (event.type == sf::Event::Closed) {
             _window.close();
@@ -100,9 +118,29 @@ void Application::_update(sf::Time dt) {
 
 //TODO add lagtime
 void Application::_render() {
+    // manage gui animation
+    if (_animateButton) {
+        auto widget = _gui.get("button");
+        if (_hideButton) {
+            _buttonPosition -= 10; 
+            if (_buttonPosition <= -250) {
+                _buttonPosition = -250;
+               _animateButton = false; 
+            }
+        } else {
+            _buttonPosition += 10;
+            if (_buttonPosition >= 0) {
+                _buttonPosition = 0;
+               _animateButton = false; 
+            }
+        }
+        widget->setPosition(_buttonPosition, 0);
+    }
+
     _window.clear();
     draw(_window, _registry);
     //drawQuadTreeDebugInfo(_window, getDebugRects());
+    _gui.draw();
     _statistics.addDrwTime();
     _window.display();
 }

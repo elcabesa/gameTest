@@ -4,6 +4,8 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Time.hpp>
 
+#include <TGUI/TGUI.hpp>
+
 #include "entt/src/entt/entt.hpp"
 
 #include "utils/statistics.h"
@@ -15,6 +17,12 @@ public:
 private:
     sf::RenderWindow _window;
     bool _isFullScreen;
+    tgui::Gui _gui;
+    int _buttonPosition;
+    bool _animateButton;
+    bool _hideButton;
+
+
     // TODO move inside game/world
     entt::registry _registry;
 
