@@ -4,3 +4,7 @@
 [submodule "src/quadtree"]
 	path = src/quadtree
 	url = git@github.com:elcabesa/Quadtree.git
+[submodule "src/TGUI"]
+	path = src/TGUI
+	url = git@github.com:texus/TGUI.git
+	branch = 0.9
