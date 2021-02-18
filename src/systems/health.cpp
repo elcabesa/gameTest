@@ -2,6 +2,9 @@
 #include "parameters.h"
 #include "components/illness.h"
 #include "entt/src/entt/entity/registry.hpp"
+#include "utils/quadtree.h"
+
+extern quadTree quadtree; //TODO REMOVE THIS global reference
 
 void updateHealth(entt::registry& reg, sf::Time elapsed) {
     auto view = reg.view<ill>();
@@ -13,7 +16,9 @@ void updateHealth(entt::registry& reg, sf::Time elapsed) {
                 reg.remove<ill>(e);
                 reg.emplace<recovered>(e);
             } else {
+                quadtree.remove(e);
                 reg.destroy(e);
+                
             }
         }
     }

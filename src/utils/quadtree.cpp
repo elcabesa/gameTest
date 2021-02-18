@@ -44,7 +44,7 @@ bool Rect::intersects(const Rect& other) const {
     return (interLeft < interRight) && (interTop < interBottom);
 }
 
-quadTreeNode::quadTreeNode(const Rect& rect, quadTreeNode* parent):_rect{rect}, _parent{parent} {}
+quadTreeNode::quadTreeNode(const Rect& rect, unsigned int depth, quadTreeNode* parent):_rect{rect}, _parent{parent}, _depth{depth} {}
 
 bool quadTreeNode::_isLeaf() const {
     return !static_cast<bool>(_children[0]);
@@ -106,36 +106,44 @@ int quadTreeNode::_getQuadrant(const Rect& valueRect) {
         return -1;
 }
 
-void quadTreeNode::add(std::size_t depth, const Node& value) {
+void quadTreeNode::add(const Node& value, std::unordered_map<entt::entity, quadTreeNode*>& cache) {
     assert(_rect.contains(value.rect));
+    //std::cout<<"add"<<std::endl;
     if (_isLeaf()) {
+        //std::cout<<"LEAF"<<std::endl;
         // Insert the value in this node if possible
-        if (depth >= MaxDepth || _values.size() < Threshold) {
+        if (_depth >= MaxDepth || _values.size() < Threshold) {
             _values.push_back(value);
+            cache[value.id] = this;
         } else {
             // Otherwise, we split and we try again
-            _split();
-            add(depth, value);
+            _split(cache);
+            add(value, cache);
         }
     } else {
+        //std::cout<<"NOT LEAF"<<std::endl;
         auto i = _getQuadrant(value.rect);
         // Add the value in a child if the value is entirely contained in it
         if (i != -1) {
-            _children[i]->add(depth + 1, value);
+            //std::cout<<"go in quadrant "<<i<<std::endl;
+            _children[i]->add(value, cache);
         } else {
+            //std::cout<<"add here"<<std::endl;
             // Otherwise, we add the value in the current node
             _values.push_back(value);
+            cache[value.id] = this;
         }
     }
 }
 
-void quadTreeNode::_split() {
+void quadTreeNode::_split(std::unordered_map<entt::entity, quadTreeNode*>& cache) {
     assert(_isLeaf() && "Only leaves can be split");
+    //std::cout<<"split"<<std::endl;
     
     // Create childrens
     unsigned i = 0;
     for (auto& child : _children) {
-        child = std::make_unique<quadTreeNode>(_computeRect(i), this);
+        child = std::make_unique<quadTreeNode>(_computeRect(i), _depth + 1, this);
         ++i;
     }
 
@@ -148,9 +156,11 @@ void quadTreeNode::_split() {
         auto i = _getQuadrant(value.rect);
         if (i != -1) {
             _children[i]->_values.push_back(value);
+            cache[value.id] = _children[i].get();
         }
         else {
             newValues.push_back(value);
+            cache[value.id] = this;
         }
     }
     _values = std::move(newValues);
@@ -209,7 +219,7 @@ void quadTreeNode::_findIntersectionsInDescendants(const Node& value, std::vecto
 
 void quadTreeNode::getRects(std::vector<Rect>& boxes) const
 {
-    if(_isLeaf()) {
+    if (_isLeaf()) {
         boxes.emplace_back(_rect);
     } else {
         for(const auto& child: _children) {
@@ -218,13 +228,126 @@ void quadTreeNode::getRects(std::vector<Rect>& boxes) const
     }
 }
 
+void quadTreeNode::updatePosition(entt::entity en, const Rect& dest, std::unordered_map<entt::entity, quadTreeNode*>& cache) {
+    // check that the entity is contained here
+    auto it = _findValue(en);
+    assert(it != _values.end());
+
+    // update the rect
+    it->rect = dest;
+    // check if the rect is still inside the rect
+    if (!_rect.contains(dest)) {
+        //save the node;
+        auto node = *it;
+        //locally remove the node
+        _removeFromVector(it);
+
+        /*std::cout<<"node id "<<(int)node.id<<std::endl;
+        std::cout<<"node rect "<<node.rect.top()<<" "<<node.rect.left()<<std::endl;*/
+
+        assert(_parent != nullptr);
+        quadTreeNode* parent = _parent;
+        _parent->_tryMerge(cache);
+
+        //PAY ATTENTCION FROM HERE this could be nullptr!! don't do any action on the node itself
+        //find the parent
+        //std::cout<<"start finding parent"<<std::endl;
+
+        //find the first parent quadTreeNode containing the rect
+        while (!parent->_rect.contains(dest) && parent != nullptr) {
+            parent = parent->_parent;
+        }
+        assert(parent->_rect.contains(dest));
+        assert(parent != nullptr);
+        //add to it & return
+        parent->add(node, cache);
+
+    } else {
+        if(!_isLeaf()) {
+            //check if we can move it in a children
+            auto i = _getQuadrant(dest);
+            // movethe value in a child if the value is entirely contained in it
+            if (i != -1) {
+                //std::cout<<"go in quadrant "<<i<<std::endl;
+                
+                auto node = *it;
+                //locally remove the node
+                *it = std::move(_values.back());
+                _values.pop_back();
+
+                //add in the children
+                _children[i]->add(node, cache);
+            }
+        }
+    }
+}
+
+std::vector<Node>::iterator quadTreeNode::_findValue(entt::entity en) {
+    return std::find_if(_values.begin(), _values.end(), [&en](const Node& x) {return en == x.id;});
+}
+
+void quadTreeNode::_removeFromVector(std::vector<Node>::iterator it) {
+    *it = std::move(_values.back());
+    _values.pop_back();
+}
+
+void quadTreeNode::_tryMerge(std::unordered_map<entt::entity, quadTreeNode*>& cache)
+{
+    assert(!_isLeaf());
+    auto nbValues = _values.size();
+    for (const auto& child : _children) {
+        //can merge only leaf nodes
+        if (!child->_isLeaf()) {
+            return;
+        }
+        nbValues += child->_values.size();
+    }
+
+    if (nbValues <= Threshold) {
+        _values.reserve(nbValues);
+        // Merge the values of all the children
+        for (const auto& child : _children) {
+            for (const auto& value : child->_values) {
+                _values.push_back(value);
+                cache[value.id] = this;
+            }
+        }
+        // Remove the children
+        for (auto& child : _children) {
+            child.reset();
+        }
+    }
+}
+
+void quadTreeNode::remove(entt::entity en, std::unordered_map<entt::entity, quadTreeNode*>& cache) {
+    // Remove the value from node
+    _removeValue(en);
+    if (_isLeaf()) {
+        if (_parent != nullptr) {
+            _parent->_tryMerge(cache);
+        }
+    }
+}
+
+void quadTreeNode::_removeValue(entt::entity en) {
+    // Find the value in node->values
+    auto it = _findValue(en);
+    assert(it != _values.end());
+    // Swap with the last element and pop back
+    _removeFromVector(it);
+}
+
 
 quadTree::quadTree(const Rect& rect):
-    _root{std::make_unique<quadTreeNode>(rect, nullptr)}
+    _root{std::make_unique<quadTreeNode>(rect)}
 {}
 
 void quadTree::add(const Node& n) {
-    _root->add(0, n);
+    _root->add(n, _cache);
+}
+
+void quadTree::updatePosition(entt::entity en, const Rect& dest) {
+    _cache.at(en)->updatePosition(en, dest, _cache);
 }
 
 std::vector<std::pair<entt::entity, entt::entity>> quadTree::findAllIntersections() const {
@@ -240,4 +363,8 @@ std::vector<Rect> quadTree::getRects() const {
     std::vector<Rect> boxes;
     _root->getRects(boxes);
     return boxes;
+}
+
+void quadTree::remove(entt::entity en) {
+    _cache.at(en)->remove(en, _cache);
 }
