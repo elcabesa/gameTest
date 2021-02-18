@@ -145,7 +145,7 @@ void Application::_render() {
 
     _window.clear();
     draw(_window, _registry);
-    drawQuadTreeDebugInfo(_window, getDebugRects());
+    //drawQuadTreeDebugInfo(_window, getDebugRects());
     _gui.draw();
     _statistics.addDrwTime();
     _window.display();

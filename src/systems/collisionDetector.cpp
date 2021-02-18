@@ -87,7 +87,7 @@ void calcCollision(entt::registry& reg) {
     //std::cout<<"update position"<<std::endl;
     CD_update(reg); // TODO move in in the movement system??
 
-    CD_calcRects();
+    //CD_calcRects();
     
     CD_updateVelocity(reg);
 }
