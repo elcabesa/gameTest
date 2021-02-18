@@ -3,6 +3,7 @@
 
 #include <array>
 #include <memory>
+#include <unordered_map>
 
 #include <SFML/Graphics.hpp>
 #include "entt/src/entt/fwd.hpp"
@@ -46,32 +47,36 @@ class quadTreeNode
 {
 public:
     
-    void add(std::size_t depth, const Node& value);
+    void add(const Node& value, std::unordered_map<entt::entity, quadTreeNode*>& cache);
     void findAllIntersections(std::vector<std::pair<entt::entity, entt::entity>>& intersections) const;
     void getRects(std::vector<Rect>& boxes) const;
-    quadTreeNode(const Rect& rect, quadTreeNode* parent);
+    quadTreeNode(const Rect& rect, unsigned int depth = 0, quadTreeNode* parent = nullptr);
+    void updatePosition(entt::entity en, const Rect& dest, std::unordered_map<entt::entity, quadTreeNode*>& cache);
 private:
         std::array<std::unique_ptr<quadTreeNode>, 4> _children;
         std::vector<Node> _values;
         Rect _rect;
         quadTreeNode* const _parent;
+        unsigned int _depth;
 
         bool _isLeaf() const;
-        void _split();
+        void _split(std::unordered_map<entt::entity, quadTreeNode*>& cache);
 
         Rect _computeRect(int i);
         int _getQuadrant(const Rect& valueRect);
         void _findIntersectionsInDescendants(const Node& value, std::vector<std::pair<entt::entity, entt::entity>>& intersections) const;
-
+        void _tryMerge(std::unordered_map<entt::entity, quadTreeNode*>& cache);
 };
 
 class quadTree {
 public:
     quadTree(const Rect& rect);
     void add(const Node& value);
+    void updatePosition(entt::entity en, const Rect& dest);
     std::vector<std::pair<entt::entity, entt::entity>> findAllIntersections() const;
     std::vector<Rect> getRects() const;
 private:
+    std::unordered_map<entt::entity, quadTreeNode*> _cache; // TODO find a better name
     std::unique_ptr<quadTreeNode> _root;
 };
 

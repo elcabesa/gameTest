@@ -14,6 +14,7 @@ void updateHealth(entt::registry& reg, sf::Time elapsed) {
                 reg.emplace<recovered>(e);
             } else {
                 reg.destroy(e);
+                //TODO remove from quadtree!!
             }
         }
     }

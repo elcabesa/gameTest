@@ -52,10 +52,15 @@ void Application::run() {
         _statistics.addDisTime();
 
         timeSinceLastUpdate += _updateDt.restart();
-        while (timeSinceLastUpdate > TimePerFrame) {
+        int i = 0;
+        while (timeSinceLastUpdate > TimePerFrame && i < 10) {
             timeSinceLastUpdate -= TimePerFrame;
 			_processInput();
 			_update(TimePerFrame);
+            ++i;
+            if(i == 10) {
+                std::cout<<"warning"<<std::endl;
+            }
 		}
         _render();
         
@@ -75,6 +80,7 @@ void Application::_initPopulation() {
             _registry.emplace<healty>(entity);
         }
     }
+    CD_init(_registry);
 }
 
 void Application::_processInput() {
@@ -90,7 +96,7 @@ void Application::_processInput() {
         }
 
         if (!_gui.handleEvent(event)) {
-            std::cout<<"event"<<std::endl;
+            //std::cout<<"event"<<std::endl;
             // TODO handle events for the game
         }
         if (event.type == sf::Event::Closed) {
@@ -139,7 +145,7 @@ void Application::_render() {
 
     _window.clear();
     draw(_window, _registry);
-    //drawQuadTreeDebugInfo(_window, getDebugRects());
+    drawQuadTreeDebugInfo(_window, getDebugRects());
     _gui.draw();
     _statistics.addDrwTime();
     _window.display();
