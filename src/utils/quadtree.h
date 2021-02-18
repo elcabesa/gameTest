@@ -76,6 +76,7 @@ private:
 
 class quadTree {
 public:
+    // todo make a decent interface, use node or en+rect consistently
     quadTree(const Rect& rect);
     void add(const Node& value);
     void updatePosition(entt::entity en, const Rect& dest);
