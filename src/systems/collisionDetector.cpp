@@ -8,9 +8,9 @@
 //#include "quadtree/include/Quadtree.h"
 #include "quadtree.h"
 
-std::vector<sf::RectangleShape> quadTreeRects;
-auto quadtree = quadTree(Rect(0.0f, 0.0f, float(dimY+2.001), float(dimX+2.001)));
-
+std::vector<sf::RectangleShape> quadTreeRects; // TODO remove global variable
+auto quadtree = quadTree(Rect(0.0f, 0.0f, float(dimY+2.001), float(dimX+2.001))); // TODO remove global variable
+ 
 const std::vector<sf::RectangleShape>& getDebugRects() {
     return quadTreeRects;
 }

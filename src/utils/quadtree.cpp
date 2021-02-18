@@ -230,11 +230,7 @@ void quadTreeNode::getRects(std::vector<Rect>& boxes) const
 
 void quadTreeNode::updatePosition(entt::entity en, const Rect& dest, std::unordered_map<entt::entity, quadTreeNode*>& cache) {
     // check that the entity is contained here
-    /*std::cout<<_values.size()<<std::endl;
-    for(auto & v: _values) {
-        std::cout<<(int)v.id<<std::endl;
-    }*/
-    auto it = std::find_if(_values.begin(), _values.end(), [&en](const Node& x) {return en == x.id;});
+    auto it = _findValue(en);
     assert(it != _values.end());
 
     // update the rect
@@ -244,8 +240,7 @@ void quadTreeNode::updatePosition(entt::entity en, const Rect& dest, std::unorde
         //save the node;
         auto node = *it;
         //locally remove the node
-        *it = std::move(_values.back());
-        _values.pop_back();
+        _removeFromVector(it);
 
         /*std::cout<<"node id "<<(int)node.id<<std::endl;
         std::cout<<"node rect "<<node.rect.top()<<" "<<node.rect.left()<<std::endl;*/
@@ -287,12 +282,20 @@ void quadTreeNode::updatePosition(entt::entity en, const Rect& dest, std::unorde
     }
 }
 
+std::vector<Node>::iterator quadTreeNode::_findValue(entt::entity en) {
+    return std::find_if(_values.begin(), _values.end(), [&en](const Node& x) {return en == x.id;});
+}
+
+void quadTreeNode::_removeFromVector(std::vector<Node>::iterator it) {
+    *it = std::move(_values.back());
+    _values.pop_back();
+}
+
 void quadTreeNode::_tryMerge(std::unordered_map<entt::entity, quadTreeNode*>& cache)
 {
     assert(!_isLeaf());
     auto nbValues = _values.size();
-    for (const auto& child : _children)
-    {
+    for (const auto& child : _children) {
         //can merge only leaf nodes
         if (!child->_isLeaf()) {
             return;
@@ -300,12 +303,10 @@ void quadTreeNode::_tryMerge(std::unordered_map<entt::entity, quadTreeNode*>& ca
         nbValues += child->_values.size();
     }
 
-    if (nbValues <= Threshold)
-    {
+    if (nbValues <= Threshold) {
         _values.reserve(nbValues);
         // Merge the values of all the children
-        for (const auto& child : _children)
-        {
+        for (const auto& child : _children) {
             for (const auto& value : child->_values) {
                 _values.push_back(value);
                 cache[value.id] = this;
@@ -316,6 +317,24 @@ void quadTreeNode::_tryMerge(std::unordered_map<entt::entity, quadTreeNode*>& ca
             child.reset();
         }
     }
+}
+
+void quadTreeNode::remove(entt::entity en, std::unordered_map<entt::entity, quadTreeNode*>& cache) {
+    // Remove the value from node
+    _removeValue(en);
+    if (_isLeaf()) {
+        if (_parent != nullptr) {
+            _parent->_tryMerge(cache);
+        }
+    }
+}
+
+void quadTreeNode::_removeValue(entt::entity en) {
+    // Find the value in node->values
+    auto it = _findValue(en);
+    assert(it != _values.end());
+    // Swap with the last element and pop back
+    _removeFromVector(it);
 }
 
 
@@ -344,4 +363,8 @@ std::vector<Rect> quadTree::getRects() const {
     std::vector<Rect> boxes;
     _root->getRects(boxes);
     return boxes;
+}
+
+void quadTree::remove(entt::entity en) {
+    _cache.at(en)->remove(en, _cache);
 }
