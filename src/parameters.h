@@ -10,7 +10,7 @@ constexpr float fps = 60.f;
 constexpr float simSpeed = 100.f;
 
 
-constexpr unsigned int population = 20;
+constexpr unsigned int population = 20000;
 constexpr unsigned int illInitialPermill = 2;
 constexpr unsigned int illProbability = 20;
 constexpr unsigned int deathProbability = 3;

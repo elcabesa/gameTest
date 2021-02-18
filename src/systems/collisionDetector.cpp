@@ -61,8 +61,7 @@ void CD_updateVelocity(entt::registry& reg) {
     for(auto& inter: intersections) {
         auto & v1 = view.get<velocity>(inter.first);
         auto & v2 = view.get<velocity>(inter.second);
-        //std::cout<<"COLLISION "<< (int)inter.first->id<<" "<< (int)inter.second->id<<std::endl;
-        
+        //std::cout<<"COLLISION "<< (int)inter.first<<" "<< (int)inter.second<<std::endl;
 
         v1.dx = (std::rand() % 50)/100.0 - 0.245;
         v1.dy = (std::rand() % 50)/100.0 - 0.245;
@@ -86,7 +85,7 @@ void CD_updateVelocity(entt::registry& reg) {
 
 void calcCollision(entt::registry& reg) {
     //std::cout<<"update position"<<std::endl;
-    CD_update(reg); // todo move in in the movement system??
+    CD_update(reg); // TODO move in in the movement system??
 
     CD_calcRects();
     

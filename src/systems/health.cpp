@@ -4,7 +4,7 @@
 #include "entt/src/entt/entity/registry.hpp"
 
 void updateHealth(entt::registry& reg, sf::Time elapsed) {
-    auto view = reg.view<ill>();
+    /*auto view = reg.view<ill>();
     for (const entt::entity e : view) {
         auto & p = view.get<ill>(e);
         p.tempo -= elapsed.asSeconds();
@@ -17,5 +17,5 @@ void updateHealth(entt::registry& reg, sf::Time elapsed) {
                 //TODO remove from quadtree!!
             }
         }
-    }
+    }*/
 }
