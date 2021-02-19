@@ -161,7 +161,7 @@ void World::render() {
     _gui.manageTransitions();
 
     draw(_target, _registry);
-    drawQuadTreeDebugInfo(_target, getDebugRects());
+    //drawQuadTreeDebugInfo(_target, getDebugRects());
     _gui.draw();
 
 }
