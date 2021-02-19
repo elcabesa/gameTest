@@ -5,8 +5,8 @@
 #include "SFML/Graphics.hpp"
 #include "entt/src/entt/fwd.hpp"
 
-void draw(sf::RenderWindow & w, entt::registry& reg);
+void draw(sf::RenderTarget & w, entt::registry& reg);
 
-void drawQuadTreeDebugInfo(sf::RenderWindow & w, const std::vector<sf::RectangleShape>& quadTreeRects);
+void drawQuadTreeDebugInfo(sf::RenderTarget & w, const std::vector<sf::RectangleShape>& quadTreeRects);
 
 #endif

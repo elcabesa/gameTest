@@ -3,7 +3,7 @@
 #include "components/illness.h"
 #include "entt/src/entt/entity/registry.hpp"
 
-void draw(sf::RenderWindow & w, entt::registry& reg) {
+void draw(sf::RenderTarget & w, entt::registry& reg) {
     sf::VertexArray va;
 
     for (auto view = reg.view<position, healty>(); const entt::entity e : view) {
@@ -21,7 +21,7 @@ void draw(sf::RenderWindow & w, entt::registry& reg) {
     w.draw(va);
 }
 
-void drawQuadTreeDebugInfo(sf::RenderWindow & w, const std::vector<sf::RectangleShape>& quadTreeRects) {
+void drawQuadTreeDebugInfo(sf::RenderTarget & w, const std::vector<sf::RectangleShape>& quadTreeRects) {
     for(auto &r:quadTreeRects) {
         w.draw(r);
     }

@@ -2,11 +2,11 @@
 #define GUI_H
 
 #include <TGUI/TGUI.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/RenderTarget.hpp>
 
 class Gui {
 public:
-    Gui(sf::RenderWindow & win);
+    Gui(sf::RenderTarget & win);
     bool handleEvent(sf::Event ev);
     void draw();
     void manageTransitions();
