@@ -26,8 +26,12 @@ private:
 
     sf::Time _elapsed;
 
+    int _zoomLevel;
+
     void _initPopulation();
     void _updateHealtyInfo();
+    sf::FloatRect _getViewBorders() const;
+    void _ensureViewInsideLimits();
 
     static constexpr float updateHealthTime = 0.1f;
 };

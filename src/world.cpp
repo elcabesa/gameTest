@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "parameters.h"
 #include "world.h"
 
@@ -16,8 +18,10 @@ World::World(sf::RenderTarget& outputTarget)
 , _worldView(_target.getDefaultView())
 , _gui(_target)
 , _elapsed{sf::Time::Zero}
+, _zoomLevel{0}
 {
     _initPopulation();
+    _target.setView(_worldView);
 }
 
 void World::_initPopulation() {
@@ -46,7 +50,99 @@ void World::_updateHealtyInfo() {
 }
 
 bool World::processInput(sf::Event ev) {
-    return _gui.handleEvent(ev);
+    //TODO decouple input & world using command list
+    if(_gui.handleEvent(ev)) {
+        return true;
+    }
+
+    if (ev.type == sf::Event::Resized)
+    {
+        // update the view to the new size of the window
+        sf::FloatRect visibleArea(0.f, 0.f, ev.size.width, ev.size.height);
+        _worldView.reset(visibleArea);
+        _target.setView(_worldView);
+        return true;
+    }
+    if (ev.type == sf::Event::KeyPressed)
+    {
+        if (ev.key.code == sf::Keyboard::Add)
+        {
+            //std::cout<<"+ pressed"<<std::endl;
+            if (_zoomLevel<10) {
+                ++_zoomLevel;
+                _worldView.zoom(0.5);
+                _target.setView(_worldView);
+                _ensureViewInsideLimits();
+            }
+
+            return true;
+        }
+        if (ev.key.code == sf::Keyboard::Subtract)
+        {
+            //std::cout<<"- pressed"<<std::endl;
+            if (_zoomLevel>0) {
+                --_zoomLevel;
+                _worldView.zoom(2.0);
+                _target.setView(_worldView);
+                _ensureViewInsideLimits();
+            }
+            return true;
+        }
+        if (ev.key.code == sf::Keyboard::Left)
+        {
+            //std::cout<<"Left pressed"<<std::endl;
+            _worldView.move(-1, 0);
+            _ensureViewInsideLimits();
+            return true;
+        }
+        if (ev.key.code == sf::Keyboard::Right)
+        {
+            //std::cout<<"Right pressed"<<std::endl;
+            _worldView.move(1, 0);
+            _target.setView(_worldView);
+            _ensureViewInsideLimits();
+            return true;
+        }
+        if (ev.key.code == sf::Keyboard::Up)
+        {
+            //std::cout<<"Up pressed"<<std::endl;
+            _worldView.move(0, -1);
+            _target.setView(_worldView);
+            _ensureViewInsideLimits();
+            return true;
+        }
+        if (ev.key.code == sf::Keyboard::Down)
+        {
+            //std::cout<<"Down pressed"<<std::endl;
+            _worldView.move(0, 1);
+            _target.setView(_worldView);
+            _ensureViewInsideLimits();
+            return true;
+        }
+    }
+    return false;
+
+}
+
+void World::_ensureViewInsideLimits() {
+    auto b = _getViewBorders();
+    //std::cout<<"view "<< b.left <<" "<< b.top << " " << b.left + b.width <<" "<< b.top + b.height << std::endl;
+    if (b.left < 0) {
+        _worldView.setCenter(_worldView.getSize().x / 2.f, _worldView.getCenter().y);
+    }
+    b = _getViewBorders();
+    if (b.top < 0) {
+        _worldView.setCenter(_worldView.getCenter().x, _worldView.getSize().y / 2.f);
+    }
+    b = _getViewBorders();
+    if (b.left + b.width >= dimX) {
+        _worldView.setCenter(dimX - _worldView.getSize().x / 2.f, _worldView.getCenter().y);
+    }
+    b = _getViewBorders();
+    if (b.top + b.height >= dimY) {
+        _worldView.setCenter(_worldView.getCenter().x , dimY - _worldView.getSize().y / 2.f);
+    }
+    _target.setView(_worldView);
 }
 
 void World::update(sf::Time dt) {
@@ -57,7 +153,7 @@ void World::update(sf::Time dt) {
 
     _elapsed += dt;
     if (_elapsed.asSeconds() >= updateHealthTime) {
-        //TODO insert a method in the world
+        // TODO insert a method in the world
         // TODO use an oberver and decouple?
         _updateHealtyInfo();
         _elapsed -= sf::seconds(updateHealthTime);
@@ -75,3 +171,8 @@ void World::render() {
 
 }
 
+sf::FloatRect World::_getViewBorders() const {
+    auto& center = _worldView.getCenter();
+    auto& size = _worldView.getSize();
+    return sf::FloatRect(center - size / 2.0f, size);
+}
