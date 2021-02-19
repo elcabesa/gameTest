@@ -1,7 +1,14 @@
 find_package(SFML 2.5.1 COMPONENTS system window graphics REQUIRED)
 
-add_executable(sfml main.cpp application.cpp )
+add_executable(sfml 
+    application.cpp
+    gui.cpp
+    main.cpp
+)
 target_link_libraries (sfml sfml-graphics sfml-window sfml-system tgui)
+
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/TGUI/themes/Black.png DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/data/gui)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/TGUI/themes/Black.txt DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/data/gui)
 
 add_subdirectory(systems)
 add_subdirectory(utils)
