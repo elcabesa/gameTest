@@ -68,15 +68,15 @@ void CD_updateVelocity(entt::registry& reg) {
         v2.dx = (std::rand() % 50)/100.0 - 0.245;
         v2.dy = (std::rand() % 50)/100.0 - 0.245;
 
-        if (reg.has<ill>(inter.first) && reg.has<healty>(inter.second)) {
+        if (reg.has<ill>(inter.first) && reg.has<healthy>(inter.second)) {
             if((std::rand() % 100) < illProbability) {
-                reg.remove<healty>(inter.second);
+                reg.remove<healthy>(inter.second);
                 reg.emplace<ill>(inter.second);
             }
         }
-        if (reg.has<ill>(inter.second) && reg.has<healty>(inter.first)) {
+        if (reg.has<ill>(inter.second) && reg.has<healthy>(inter.first)) {
             if((std::rand() % 100) < illProbability) {
-                reg.remove<healty>(inter.first);
+                reg.remove<healthy>(inter.first);
                 reg.emplace<ill>(inter.first);
             }
         }

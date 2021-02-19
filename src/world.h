@@ -29,7 +29,7 @@ private:
     int _zoomLevel;
 
     void _initPopulation();
-    void _updateHealtyInfo();
+    void _updateHealthyInfo();
     sf::FloatRect _getViewBorders() const;
     void _ensureViewInsideLimits();
 
