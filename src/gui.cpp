@@ -1,7 +1,7 @@
 #include "gui.h"
 #include "parameters.h"
 
-Gui::Gui(sf::RenderWindow & win)
+Gui::Gui(sf::RenderTarget & win)
 : _gui(win)
 , _buttonPosition{0}
 , _animateButton{false}

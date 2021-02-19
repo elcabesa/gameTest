@@ -17,7 +17,7 @@
 Application::Application()
 : _window(sf::VideoMode(dimX, dimY), "Simulator", sf::Style::Resize | sf::Style::Close) 
 , _isFullScreen{false}
-, _gui(_window)
+, _world{_window}
 {
     // create the window
     //_window.setVerticalSyncEnabled(true);
@@ -29,9 +29,6 @@ Application::Application()
 
 void Application::run() {
     const sf::Time TimePerFrame = sf::seconds(1.f/simSpeed);
-
-    //todo move inside world/game
-    _initPopulation();
 
     // create a clock to track the elapsed time
     _updateDt.restart();
@@ -58,22 +55,6 @@ void Application::run() {
     }
 }
 
-void Application::_initPopulation() {
-    for(auto i = 0u; i < population; ++i) {
-        const auto entity = _registry.create();
-        _registry.emplace<position>(entity, float(std::rand() % dimX), float(std::rand() % dimY));
-        _registry.emplace<velocity>(entity, float((std::rand() % 50)/100.0 - 0.245), float((std::rand() % 50)/100.0 - 0.245));
-        if (std::rand() % 1000 < illInitialPermill) {
-            _registry.emplace<ill>(entity);
-        }
-        else {
-            _registry.emplace<healty>(entity);
-        }
-    }
-    CD_init(_registry);
-    _updateHealtyInfo();
-}
-
 void Application::_processInput() {
     // handle events
     sf::Event event;
@@ -86,11 +67,10 @@ void Application::_processInput() {
                 // TODO create a function to setup widow all the time there is a change
                 //_window.setVerticalSyncEnabled(true);
                 _window.setFramerateLimit(fps);
-
             }
         }
 
-        if (!_gui.handleEvent(event)) {
+        if (!_world.processInput(event)) {
             //std::cout<<"event"<<std::endl;
             // TODO handle events for the game
         }
@@ -102,40 +82,16 @@ void Application::_processInput() {
 }
 
 void Application::_update(sf::Time dt) {
-    static sf::Time elapsed = sf::Time::Zero;
-    updatePosition(_registry);
-    worldBorderCollision(_registry);
-    calcCollision(_registry);
-    updateHealth(_registry, dt);
-
-    elapsed += dt;
-    if (elapsed.asSeconds() >= 0.1f) {
-        //TODO insert a method in the world
-        // TODO use an oberver and decouple?
-        _updateHealtyInfo();
-        elapsed -= sf::seconds(0.1f);
-    }
+    _world.update(dt);
     _statistics.addSimTime();
 }
 
 //TODO add lagtime
 void Application::_render() {
-    // manage gui animation
-    _gui.manageTransitions();
+
     
     _window.clear();
-    draw(_window, _registry);
-    //drawQuadTreeDebugInfo(_window, getDebugRects());
-    _gui.draw();
+    _world.render();
     _statistics.addDrwTime();
     _window.display();
-}
-
-void Application::_updateHealtyInfo() {
-    _gui.setHealthInfo(
-        _registry.view<healty>().size(),
-        _registry.view<ill>().size(),
-        _registry.size() - _registry.view<healty>().size() - _registry.view<ill>().size() - _registry.view<recovered>().size(),
-        _registry.view<recovered>().size()
-    );
 }

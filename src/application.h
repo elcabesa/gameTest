@@ -4,13 +4,10 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Time.hpp>
 
-#include <TGUI/TGUI.hpp>
-
-#include "entt/src/entt/entt.hpp"
-
 #include "utils/statistics.h"
 
-#include "gui.h"
+#include "world.h"
+
 
 class Application {
 public:
@@ -19,22 +16,15 @@ public:
 private:
     sf::RenderWindow _window;
     bool _isFullScreen;
-    Gui _gui;
 
-    // TODO move inside game/world
-    entt::registry _registry;
+    World _world;
 
     sf::Clock _updateDt;
     EngineStatistics _statistics;
 
-    // TODO move inside game/world
-    void _initPopulation();
-
     void _processInput();
     void _update(sf::Time dt);
     void _render();
-
-    void _updateHealtyInfo();
     
 };
 
