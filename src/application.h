@@ -10,6 +10,8 @@
 
 #include "utils/statistics.h"
 
+#include "gui.h"
+
 class Application {
 public:
     Application();
@@ -17,11 +19,7 @@ public:
 private:
     sf::RenderWindow _window;
     bool _isFullScreen;
-    tgui::Gui _gui;
-    int _buttonPosition;
-    bool _animateButton;
-    bool _hideButton;
-
+    Gui _gui;
 
     // TODO move inside game/world
     entt::registry _registry;
@@ -35,6 +33,8 @@ private:
     void _processInput();
     void _update(sf::Time dt);
     void _render();
+
+    void _updateHealtyInfo();
     
 };
 

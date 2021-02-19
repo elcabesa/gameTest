@@ -18,20 +18,10 @@ Application::Application()
 : _window(sf::VideoMode(dimX, dimY), "Simulator", sf::Style::Resize | sf::Style::Close) 
 , _isFullScreen{false}
 , _gui(_window)
-, _buttonPosition{0}
-, _animateButton{false}
-, _hideButton{false} {
+{
     // create the window
     //_window.setVerticalSyncEnabled(true);
     _window.setFramerateLimit(fps);
-
-    _gui.setAbsoluteViewport({0, 0, dimX, dimY});
-    tgui::Button::Ptr container = tgui::Button::create();
-    container->setPosition(_buttonPosition, 0);
-    container->setSize(300, 100);
-    container->setText("ciao");
-    _gui.add(container, "button");
-    container->onPress([&]{ _hideButton = !_hideButton; _animateButton = true; });
 }
 
 
@@ -81,6 +71,7 @@ void Application::_initPopulation() {
         }
     }
     CD_init(_registry);
+    _updateHealtyInfo();
 }
 
 void Application::_processInput() {
@@ -92,6 +83,10 @@ void Application::_processInput() {
             if (event.key.code == sf::Keyboard::F11) {
                 _isFullScreen = !_isFullScreen;
                 _window.create( _isFullScreen ? sf::VideoMode::getDesktopMode() : sf::VideoMode(dimX, dimY), "Simulator", _isFullScreen ? sf::Style::Fullscreen : sf::Style::Resize | sf::Style::Close);
+                // TODO create a function to setup widow all the time there is a change
+                //_window.setVerticalSyncEnabled(true);
+                _window.setFramerateLimit(fps);
+
             }
         }
 
@@ -114,10 +109,11 @@ void Application::_update(sf::Time dt) {
     updateHealth(_registry, dt);
 
     elapsed += dt;
-    if (elapsed.asSeconds() >= 1.f) {
+    if (elapsed.asSeconds() >= 0.1f) {
         //TODO insert a method in the world
-        std::cout<<"sani:"<<_registry.view<healty>().size()<< "\tmalati:"<<_registry.view<ill>().size()<<"\tmorti:"<<(_registry.size() - _registry.view<healty>().size() - _registry.view<ill>().size() - _registry.view<recovered>().size())<<"\tguariti:"<<_registry.view<recovered>().size()<<std::endl;
-        elapsed -= sf::seconds(1.f);
+        // TODO use an oberver and decouple?
+        _updateHealtyInfo();
+        elapsed -= sf::seconds(0.1f);
     }
     _statistics.addSimTime();
 }
@@ -125,28 +121,21 @@ void Application::_update(sf::Time dt) {
 //TODO add lagtime
 void Application::_render() {
     // manage gui animation
-    if (_animateButton) {
-        auto widget = _gui.get("button");
-        if (_hideButton) {
-            _buttonPosition -= 10; 
-            if (_buttonPosition <= -250) {
-                _buttonPosition = -250;
-               _animateButton = false; 
-            }
-        } else {
-            _buttonPosition += 10;
-            if (_buttonPosition >= 0) {
-                _buttonPosition = 0;
-               _animateButton = false; 
-            }
-        }
-        widget->setPosition(_buttonPosition, 0);
-    }
-
+    _gui.manageTransitions();
+    
     _window.clear();
     draw(_window, _registry);
     //drawQuadTreeDebugInfo(_window, getDebugRects());
     _gui.draw();
     _statistics.addDrwTime();
     _window.display();
+}
+
+void Application::_updateHealtyInfo() {
+    _gui.setHealthInfo(
+        _registry.view<healty>().size(),
+        _registry.view<ill>().size(),
+        _registry.size() - _registry.view<healty>().size() - _registry.view<ill>().size() - _registry.view<recovered>().size(),
+        _registry.view<recovered>().size()
+    );
 }
