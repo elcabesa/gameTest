@@ -22,8 +22,6 @@ World::World(sf::RenderTarget& outputTarget)
 {
     _initPopulation();
     _target.setView(_worldView);
-    //auto b = _getViewBorders();
-    //std::cout<<"view "<< b.left <<" "<< b.top << " " << b.left + b.width <<" "<< b.top + b.height << std::endl;
 }
 
 void World::_initPopulation() {
@@ -59,6 +57,7 @@ bool World::processInput(sf::Event ev) {
 
     if (ev.type == sf::Event::Resized)
     {
+        //TODO WRITE CODE FOR resize
         // update the view to the new size of the window
         /*sf::FloatRect visibleArea(0.f, 0.f, ev.size.width, ev.size.height);
         _worldView.reset(visibleArea);
@@ -69,7 +68,6 @@ bool World::processInput(sf::Event ev) {
     {
         if (ev.key.code == sf::Keyboard::Add)
         {
-            //std::cout<<"+ pressed"<<std::endl;
             if (_zoomLevel<10) {
                 ++_zoomLevel;
                 _worldView.zoom(0.5);
@@ -81,7 +79,6 @@ bool World::processInput(sf::Event ev) {
         }
         if (ev.key.code == sf::Keyboard::Subtract)
         {
-            //std::cout<<"- pressed"<<std::endl;
             if (_zoomLevel>0) {
                 --_zoomLevel;
                 _worldView.zoom(2.0);
@@ -92,7 +89,6 @@ bool World::processInput(sf::Event ev) {
         }
         if (ev.key.code == sf::Keyboard::Left)
         {
-            //std::cout<<"Left pressed"<<std::endl;
             _worldView.move(-1, 0);
             _target.setView(_worldView);
             _ensureViewInsideLimits();
@@ -100,7 +96,6 @@ bool World::processInput(sf::Event ev) {
         }
         if (ev.key.code == sf::Keyboard::Right)
         {
-            //std::cout<<"Right pressed"<<std::endl;
             _worldView.move(1, 0);
             _target.setView(_worldView);
             _ensureViewInsideLimits();
@@ -108,7 +103,6 @@ bool World::processInput(sf::Event ev) {
         }
         if (ev.key.code == sf::Keyboard::Up)
         {
-            //std::cout<<"Up pressed"<<std::endl;
             _worldView.move(0, -1);
             _target.setView(_worldView);
             _ensureViewInsideLimits();
@@ -116,7 +110,6 @@ bool World::processInput(sf::Event ev) {
         }
         if (ev.key.code == sf::Keyboard::Down)
         {
-            //std::cout<<"Down pressed"<<std::endl;
             _worldView.move(0, 1);
             _target.setView(_worldView);
             _ensureViewInsideLimits();
@@ -129,7 +122,6 @@ bool World::processInput(sf::Event ev) {
 
 void World::_ensureViewInsideLimits() {
     auto b = _getViewBorders();
-    std::cout<<"view "<< b.left <<" "<< b.top << " " << b.left + b.width <<" "<< b.top + b.height << std::endl;
     if (b.left < 0) {
         _worldView.setCenter(_worldView.getSize().x / 2.f, _worldView.getCenter().y);
     }

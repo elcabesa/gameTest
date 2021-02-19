@@ -1,11 +1,9 @@
-#include <iostream>
 #include "collisionDetector.h"
 #include "parameters.h"
 #include "components/position.h"
 #include "components/velocity.h"
 #include "components/illness.h"
 #include "entt/src/entt/entity/registry.hpp"
-//#include "quadtree/include/Quadtree.h"
 #include "quadtree.h"
 
 std::vector<sf::RectangleShape> quadTreeRects; // TODO remove global variable
@@ -36,7 +34,6 @@ void CD_update(entt::registry& reg) {
     
     for (auto& en: view) {
         auto& pos = view.get<position>(en);
-        //std::cout<<"check en "<<(int)en<<" pointer "<<pointer.node<<std::endl;
         quadtree.updatePosition(en, Rect(pos.y, pos.x, 2, 2));
     }
 }
@@ -57,11 +54,10 @@ void CD_updateVelocity(entt::registry& reg) {
     auto view = reg.view<velocity>();
 
     auto intersections = quadtree.findAllIntersections();
-    //std::cout<<"intersection size:"<<intersections.size()<<std::endl;
+
     for(auto& inter: intersections) {
         auto & v1 = view.get<velocity>(inter.first);
         auto & v2 = view.get<velocity>(inter.second);
-        //std::cout<<"COLLISION "<< (int)inter.first<<" "<< (int)inter.second<<std::endl;
 
         v1.dx = (std::rand() % 50)/100.0 - 0.245;
         v1.dy = (std::rand() % 50)/100.0 - 0.245;
@@ -84,10 +80,7 @@ void CD_updateVelocity(entt::registry& reg) {
 }
 
 void calcCollision(entt::registry& reg) {
-    //std::cout<<"update position"<<std::endl;
     CD_update(reg); // TODO move in in the movement system??
-
     CD_calcRects();
-    
     CD_updateVelocity(reg);
 }

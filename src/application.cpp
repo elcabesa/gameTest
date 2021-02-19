@@ -3,16 +3,6 @@
 
 #include <iostream>
 
-//TODO move inside game/world
-#include "components/illness.h"
-#include "components/position.h"
-#include "components/velocity.h"
-
-#include "systems/collisionDetector.h"
-#include "systems/health.h"
-#include "systems/movement.h"
-#include "systems/renderer.h"
-
 //TODO find a good name for application
 Application::Application()
 : _window(sf::VideoMode(dimX, dimY), "Simulator", sf::Style::Resize | sf::Style::Close) 
@@ -23,9 +13,6 @@ Application::Application()
     //_window.setVerticalSyncEnabled(true);
     _window.setFramerateLimit(fps);
 }
-
-
-
 
 void Application::run() {
     const sf::Time TimePerFrame = sf::seconds(1.f/simSpeed);
@@ -46,7 +33,7 @@ void Application::run() {
 			_update(TimePerFrame);
             ++i;
             if(i == 10) {
-                std::cout<<"warning"<<std::endl;
+                std::cout<<"warning system is too slow"<<std::endl;
             }
 		}
         _render();
@@ -88,8 +75,6 @@ void Application::_update(sf::Time dt) {
 
 //TODO add lagtime
 void Application::_render() {
-
-    
     _window.clear();
     _world.render();
     _statistics.addDrwTime();
