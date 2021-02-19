@@ -7,7 +7,7 @@
 void draw(sf::RenderTarget & w, entt::registry& reg) {
     sf::VertexArray va;
 
-    for (auto view = reg.view<position, healty>(); const entt::entity e : view) {
+    for (auto view = reg.view<position, healthy>(); const entt::entity e : view) {
         auto & p =view.get<position>(e);
         va.append(sf::Vertex(sf::Vector2f(p.x, p.y), sf::Color(255u,255u,255u)));   
     }

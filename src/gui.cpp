@@ -71,16 +71,16 @@ void Gui::manageTransitions() {
     }
 }
 
-void Gui::setHealthInfo(unsigned int healty, unsigned int ill, unsigned int death, unsigned int recovered) {
+void Gui::setHealthInfo(unsigned int healthy, unsigned int ill, unsigned int death, unsigned int recovered) {
     if (!_animateButton && _hideButton) {
-        _gui.get<tgui::Label>("labHealthy")  ->setText("S:" + std::to_string(healty)   );
+        _gui.get<tgui::Label>("labHealthy")  ->setText("S:" + std::to_string(healthy)   );
         _gui.get<tgui::Label>("labIll")      ->setText("M:" + std::to_string(ill)      );
         _gui.get<tgui::Label>("labDeath")    ->setText("M:" + std::to_string(death)    );
         _gui.get<tgui::Label>("labRecovered")->setText("G:" + std::to_string(recovered));
         _gui.get<tgui::VerticalLayout>("verticalLayout")->setPosition(230, 0);
 
     } else {
-        _gui.get<tgui::Label>("labHealthy")  ->setText("Sani:   " + std::to_string(healty)   );
+        _gui.get<tgui::Label>("labHealthy")  ->setText("Sani:   " + std::to_string(healthy)   );
         _gui.get<tgui::Label>("labIll")      ->setText("Malati: " + std::to_string(ill)      );
         _gui.get<tgui::Label>("labDeath")    ->setText("Morti:  " + std::to_string(death)    );
         _gui.get<tgui::Label>("labRecovered")->setText("Guariti:" + std::to_string(recovered));

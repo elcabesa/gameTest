@@ -35,18 +35,18 @@ void World::_initPopulation() {
             _registry.emplace<ill>(entity);
         }
         else {
-            _registry.emplace<healty>(entity);
+            _registry.emplace<healthy>(entity);
         }
     }
     CD_init(_registry);
-    _updateHealtyInfo();
+    _updateHealthyInfo();
 }
 
-void World::_updateHealtyInfo() {
+void World::_updateHealthyInfo() {
     _gui.setHealthInfo(
-        _registry.view<healty>().size(),
+        _registry.view<healthy>().size(),
         _registry.view<ill>().size(),
-        _registry.size() - _registry.view<healty>().size() - _registry.view<ill>().size() - _registry.view<recovered>().size(),
+        _registry.size() - _registry.view<healthy>().size() - _registry.view<ill>().size() - _registry.view<recovered>().size(),
         _registry.view<recovered>().size()
     );
 }
@@ -158,7 +158,7 @@ void World::update(sf::Time dt) {
     if (_elapsed.asSeconds() >= updateHealthTime) {
         // TODO insert a method in the world
         // TODO use an oberver and decouple?
-        _updateHealtyInfo();
+        _updateHealthyInfo();
         _elapsed -= sf::seconds(updateHealthTime);
     }
 }

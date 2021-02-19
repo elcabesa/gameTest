@@ -6,7 +6,7 @@
 struct ill {
     float tempo = illnessDuration;
 };
-struct healty {};
+struct healthy {};
 
 struct recovered {};
 
