@@ -9,7 +9,7 @@
 #include "quadtree.h"
 
 std::vector<sf::RectangleShape> quadTreeRects; // TODO remove global variable
-auto quadtree = quadTree(Rect(0.0f, 0.0f, float(dimY+2.001), float(dimX+2.001))); // TODO remove global variable
+auto quadtree = quadTree(Rect(0.0f, 0.0f, float(worldY), float(worldX))); // TODO remove global variable
  
 const std::vector<sf::RectangleShape>& getDebugRects() {
     return quadTreeRects;
@@ -17,8 +17,8 @@ const std::vector<sf::RectangleShape>& getDebugRects() {
 
 void CD_init(entt::registry& reg) {
     Node node;
-    node.rect.height() = 2;
-    node.rect.width() = 2;
+    node.rect.height() = objectSize;
+    node.rect.width() = objectSize;
 
     auto view = reg.view<position>();
 
@@ -48,7 +48,7 @@ void CD_calcRects() {
         r.setPosition(b.left(), b.top());
         r.setFillColor(sf::Color::Transparent);
         r.setOutlineColor(sf::Color::Yellow);
-        r.setOutlineThickness(1);
+        r.setOutlineThickness(2);
         quadTreeRects.push_back(r);
     }
 }
@@ -87,7 +87,7 @@ void calcCollision(entt::registry& reg) {
     //std::cout<<"update position"<<std::endl;
     CD_update(reg); // TODO move in in the movement system??
 
-    //CD_calcRects();
+    CD_calcRects();
     
     CD_updateVelocity(reg);
 }

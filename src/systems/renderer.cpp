@@ -1,3 +1,4 @@
+#include <iostream>
 #include "renderer.h"
 #include "components/position.h"
 #include "components/illness.h"
@@ -22,7 +23,10 @@ void draw(sf::RenderTarget & w, entt::registry& reg) {
 }
 
 void drawQuadTreeDebugInfo(sf::RenderTarget & w, const std::vector<sf::RectangleShape>& quadTreeRects) {
+   // unsigned int i = 0;
     for(auto &r:quadTreeRects) {
+        //std::cout<<r.getPosition().x<<" "<<r.getPosition().y<<" "<<r.getSize().x<<" "<<r.getSize().y<<std::endl;
+        //if(++i>10) {exit(0);}
         w.draw(r);
     }
 }

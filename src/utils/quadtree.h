@@ -12,7 +12,7 @@
 static constexpr auto Threshold = std::size_t(16);
 static constexpr auto MaxDepth = std::size_t(8);
 
-// TODO remove rect and use sf::rect?s
+// TODO remove rect and use sf::rect?
 class Rect {
 public:
     Rect(float top = 0, float left = 0, float height = 0, float width = 0);

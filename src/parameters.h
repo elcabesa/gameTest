@@ -6,6 +6,11 @@
 constexpr unsigned int dimX = 1024;
 constexpr unsigned int dimY = 768;
 
+constexpr unsigned int worldX = 4000;
+constexpr unsigned int worldY = 3000;
+constexpr unsigned int objectSize = 2;
+constexpr float epsilon = 0.01f;
+
 constexpr float fps = 60.f;
 constexpr float simSpeed = 100.f;
 

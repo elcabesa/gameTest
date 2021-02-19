@@ -21,11 +21,11 @@ void worldBorderCollision(entt::registry &reg) {
         auto & p =view.get<position>(e);
         auto & v = view.get<velocity>(e); 
 
-        if(p.x <= 0) { p.x = 0; v.dx *= -1;}
-        if(p.x >= dimX) { p.x = dimX; v.dx *= -1;}
+        if(p.x <= objectSize) { p.x = objectSize; v.dx *= -1;}
+        if(p.x >= worldX - objectSize - epsilon) { p.x = worldX - objectSize - epsilon; v.dx *= -1;}
             
-        if(p.y <= 0) { p.y = 0; v.dy *= -1;}
-        if(p.y >= dimY) { p.y = dimY; v.dy *= -1;}
+        if(p.y <= objectSize) { p.y = objectSize; v.dy *= -1;}
+        if(p.y >= worldY - objectSize - epsilon) { p.y = worldY - objectSize - epsilon; v.dy *= -1;}
     }
 
 }

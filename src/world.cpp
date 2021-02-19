@@ -15,19 +15,21 @@
 
 World::World(sf::RenderTarget& outputTarget)
 : _target{outputTarget}
-, _worldView(_target.getDefaultView())
+, _worldView(sf::FloatRect(0, 0, worldX, worldY))
 , _gui(_target)
 , _elapsed{sf::Time::Zero}
 , _zoomLevel{0}
 {
     _initPopulation();
     _target.setView(_worldView);
+    //auto b = _getViewBorders();
+    //std::cout<<"view "<< b.left <<" "<< b.top << " " << b.left + b.width <<" "<< b.top + b.height << std::endl;
 }
 
 void World::_initPopulation() {
     for(auto i = 0u; i < population; ++i) {
         const auto entity = _registry.create();
-        _registry.emplace<position>(entity, float(std::rand() % dimX), float(std::rand() % dimY));
+        _registry.emplace<position>(entity, float(std::rand() % (worldX-2 * objectSize) + objectSize), float(std::rand() % (worldY-2 * objectSize) + objectSize));
         _registry.emplace<velocity>(entity, float((std::rand() % 50)/100.0 - 0.245), float((std::rand() % 50)/100.0 - 0.245));
         if (std::rand() % 1000 < illInitialPermill) {
             _registry.emplace<ill>(entity);
@@ -58,9 +60,9 @@ bool World::processInput(sf::Event ev) {
     if (ev.type == sf::Event::Resized)
     {
         // update the view to the new size of the window
-        sf::FloatRect visibleArea(0.f, 0.f, ev.size.width, ev.size.height);
+        /*sf::FloatRect visibleArea(0.f, 0.f, ev.size.width, ev.size.height);
         _worldView.reset(visibleArea);
-        _target.setView(_worldView);
+        _target.setView(_worldView);*/
         return true;
     }
     if (ev.type == sf::Event::KeyPressed)
@@ -92,6 +94,7 @@ bool World::processInput(sf::Event ev) {
         {
             //std::cout<<"Left pressed"<<std::endl;
             _worldView.move(-1, 0);
+            _target.setView(_worldView);
             _ensureViewInsideLimits();
             return true;
         }
@@ -126,7 +129,7 @@ bool World::processInput(sf::Event ev) {
 
 void World::_ensureViewInsideLimits() {
     auto b = _getViewBorders();
-    //std::cout<<"view "<< b.left <<" "<< b.top << " " << b.left + b.width <<" "<< b.top + b.height << std::endl;
+    std::cout<<"view "<< b.left <<" "<< b.top << " " << b.left + b.width <<" "<< b.top + b.height << std::endl;
     if (b.left < 0) {
         _worldView.setCenter(_worldView.getSize().x / 2.f, _worldView.getCenter().y);
     }
@@ -135,12 +138,12 @@ void World::_ensureViewInsideLimits() {
         _worldView.setCenter(_worldView.getCenter().x, _worldView.getSize().y / 2.f);
     }
     b = _getViewBorders();
-    if (b.left + b.width >= dimX) {
-        _worldView.setCenter(dimX - _worldView.getSize().x / 2.f, _worldView.getCenter().y);
+    if (b.left + b.width >= worldX) {
+        _worldView.setCenter(worldX - _worldView.getSize().x / 2.f, _worldView.getCenter().y);
     }
     b = _getViewBorders();
-    if (b.top + b.height >= dimY) {
-        _worldView.setCenter(_worldView.getCenter().x , dimY - _worldView.getSize().y / 2.f);
+    if (b.top + b.height >= worldY) {
+        _worldView.setCenter(_worldView.getCenter().x , worldY - _worldView.getSize().y / 2.f);
     }
     _target.setView(_worldView);
 }
@@ -166,7 +169,7 @@ void World::render() {
     _gui.manageTransitions();
 
     draw(_target, _registry);
-    //drawQuadTreeDebugInfo(_target, getDebugRects());
+    drawQuadTreeDebugInfo(_target, getDebugRects());
     _gui.draw();
 
 }
