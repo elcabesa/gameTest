@@ -27,6 +27,8 @@ private:
     sf::Time _elapsed;
 
     int _zoomLevel;
+    sf::Texture _texture;
+    sf::Sprite _sprite;
 
     void _initPopulation();
     void _updateHealthyInfo();

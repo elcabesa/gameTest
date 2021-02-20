@@ -22,6 +22,13 @@ World::World(sf::RenderTarget& outputTarget)
 {
     _initPopulation();
     _target.setView(_worldView);
+
+    if (!_texture.loadFromFile("data/man.png")) {
+        exit(0);
+    }
+    _texture.setSmooth(true);
+    _sprite.setTexture(_texture);
+    _sprite.setScale(sf::Vector2f(0.002f, 0.002f));
 }
 
 void World::_initPopulation() {
@@ -160,7 +167,7 @@ void World::render() {
     //TODO use elapsed time to have a smoth transition
     _gui.manageTransitions();
 
-    draw(_target, _registry);
+    draw(_target, _registry, _sprite, _zoomLevel);
     //drawQuadTreeDebugInfo(_target, getDebugRects());
     _gui.draw();
 
