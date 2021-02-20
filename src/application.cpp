@@ -1,3 +1,5 @@
+
+#include <spdlog/spdlog.h>
 #include "application.h"
 #include "parameters.h"
 
@@ -15,6 +17,7 @@ Application::Application()
 }
 
 void Application::run() {
+    spdlog::info("SFML start");
     const sf::Time TimePerFrame = sf::seconds(1.f/simSpeed);
 
     // create a clock to track the elapsed time

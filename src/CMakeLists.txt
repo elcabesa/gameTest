@@ -6,13 +6,14 @@ add_executable(sfml
     main.cpp
     world.cpp
 )
-target_link_libraries (sfml sfml-graphics sfml-window sfml-system tgui)
+target_link_libraries (sfml sfml-graphics sfml-window sfml-system tgui spdlog::spdlog_header_only)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/TGUI/themes/Black.png DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/data/gui)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/TGUI/themes/Black.txt DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/data/gui)
 
 add_subdirectory(systems)
 add_subdirectory(utils)
+add_subdirectory(spdlog)
 add_subdirectory(TGUI)
 
 # Make sure the compiler can find include files for our sfml library
