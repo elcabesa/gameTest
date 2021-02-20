@@ -8,3 +8,6 @@
 	path = src/TGUI
 	url = git@github.com:texus/TGUI.git
 	branch = 0.9
+[submodule "src/spdlog"]
+	path = src/spdlog
+	url = git@github.com:gabime/spdlog.git
