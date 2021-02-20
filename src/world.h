@@ -27,6 +27,7 @@ private:
     sf::Time _elapsed;
 
     int _zoomLevel;
+    // TODO add a texture manager/holder
     sf::Texture _texture;
     sf::Sprite _sprite;
 
