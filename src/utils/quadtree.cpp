@@ -1,101 +1,58 @@
 #include <iostream>
 #include "quadtree.h"
 
-//static unsigned long int nodes = 0;
-//static unsigned long int tests = 0;
-
-Rect::Rect(float top, float left, float height, float width): 
-_top(top),
-_left(left),
-_height(height),
-_width(width)
-{}
-
-Rect::Rect(const sf::Vector2<float>& pos, const sf::Vector2<float>& size):
-_top(pos.y),
-_left(pos.x),
-_height(size.y),
-_width(size.x)
-{}
-
-float& Rect::top() {return _top;}
-float& Rect::left() {return _left;}
-float Rect::bottom() const {return _top + _height;}
-float Rect::right() const {return _left + _width;}
-float& Rect::width() {return _width;}
-float& Rect::height() {return _height;}
-
-float Rect::top() const {return _top;}
-float Rect::left() const {return _left;}
-float Rect::width() const {return _width;}
-float Rect::height() const {return _height;}
-
-
-bool Rect::contains(const Rect& other) const {
-    return _left <= other._left && other.right() < right() &&
-            _top <= other._top && other.bottom() < bottom();
-}
-
-bool Rect::intersects(const Rect& other) const {
-    float interLeft   = std::max(_left, other._left);
-    float interTop    = std::max(_top, other._top);
-    float interRight  = std::min(right(), other.right());
-    float interBottom = std::min(bottom(), other.bottom());
-    return (interLeft < interRight) && (interTop < interBottom);
-}
-
-quadTreeNode::quadTreeNode(const Rect& rect, unsigned int depth, quadTreeNode* parent):_rect{rect}, _parent{parent}, _depth{depth} {}
+quadTreeNode::quadTreeNode(const sf::FloatRect& rect, unsigned int depth, quadTreeNode* parent):_rect{rect}, _parent{parent}, _depth{depth} {}
 
 bool quadTreeNode::_isLeaf() const {
     return !static_cast<bool>(_children[0]);
 }
 
-Rect quadTreeNode::_computeRect(int i) {
-    sf::Vector2<float> origin(_rect.left(), _rect.top());
-    sf::Vector2<float> childSize(_rect.width() / 2.0f, _rect.height() / 2.0f);
+sf::FloatRect quadTreeNode::_computeRect(int i) {
+    sf::Vector2<float> origin(_rect.left, _rect.top);
+    sf::Vector2<float> childSize(_rect.width / 2.0f, _rect.height / 2.0f);
 
     switch (i) {
         // North West
         case 0:
-            return Rect(origin, childSize);
+            return sf::FloatRect(origin, childSize);
         // Norst East
         case 1:
-            return Rect(sf::Vector2<float>(origin.x + childSize.x, origin.y), childSize);
+            return sf::FloatRect(sf::Vector2<float>(origin.x + childSize.x, origin.y), childSize);
         // South West
         case 2:
-            return Rect(sf::Vector2<float>(origin.x, origin.y + childSize.y), childSize);
+            return sf::FloatRect(sf::Vector2<float>(origin.x, origin.y + childSize.y), childSize);
         // South East
         case 3:
-            return Rect(origin + childSize, childSize);
+            return sf::FloatRect(origin + childSize, childSize);
         default:
             assert(false && "Invalid child index");
-            return Rect();
+            return sf::FloatRect();
     }
 }
 
-int quadTreeNode::_getQuadrant(const Rect& valueRect) {
-    sf::Vector2<float> center(_rect.left() + _rect.width() / 2.0f, _rect.top() + _rect.height() / 2.0f);
+int quadTreeNode::_getQuadrant(const sf::FloatRect& valueRect) {
+    sf::Vector2<float> center(_rect.left + _rect.width / 2.0f, _rect.top + _rect.height / 2.0f);
     // West
-    if (valueRect.right() < center.x)
+    if (valueRect.left + valueRect.width < center.x)
     {
         // North West
-        if (valueRect.bottom() < center.y)
+        if (valueRect.top + valueRect.height < center.y)
             return 0;
         // South West
-        else if (valueRect.top() >= center.y)
+        else if (valueRect.top >= center.y)
             return 2;
         // Not contained in any quadrant
         else
             return -1;
     }
     // East
-    else if (valueRect.left() >= center.x)
+    else if (valueRect.left >= center.x)
     {
         // North East
-        if (valueRect.bottom() < center.y)
+        if (valueRect.top + valueRect.height < center.y)
             return 1;
         // South East
-        else if (valueRect.top() >= center.y)
+        else if (valueRect.top >= center.y)
             return 3;
         // Not contained in any quadrant
         else
@@ -107,7 +64,8 @@ int quadTreeNode::_getQuadrant(const Rect& valueRect) {
 }
 
 void quadTreeNode::add(const Node& value, std::unordered_map<entt::entity, quadTreeNode*>& cache) {
-    assert(_rect.contains(value.rect));
+    assert(_rect.contains(sf::Vector2f(value.rect.left, value.rect.top)));
+    assert(_rect.contains(sf::Vector2f(value.rect.left + value.rect.width, value.rect.top + value.rect.height)));
     if (_isLeaf()) {
         // Insert the value in this node if possible
         if (_depth >= MaxDepth || _values.size() < Threshold) {
@@ -211,7 +169,7 @@ void quadTreeNode::_findIntersectionsInDescendants(const Node& value, std::vecto
     }
 }
 
-void quadTreeNode::getRects(std::vector<Rect>& boxes) const
+void quadTreeNode::getRects(std::vector<sf::FloatRect>& boxes) const
 {
     if (_isLeaf()) {
         boxes.emplace_back(_rect);
@@ -222,7 +180,7 @@ void quadTreeNode::getRects(std::vector<Rect>& boxes) const
     }
 }
 
-void quadTreeNode::updatePosition(entt::entity en, const Rect& dest, std::unordered_map<entt::entity, quadTreeNode*>& cache) {
+void quadTreeNode::updatePosition(entt::entity en, const sf::FloatRect& dest, std::unordered_map<entt::entity, quadTreeNode*>& cache) {
     // check that the entity is contained here
     auto it = _findValue(en);
     assert(it != _values.end());
@@ -230,7 +188,7 @@ void quadTreeNode::updatePosition(entt::entity en, const Rect& dest, std::unorde
     // update the rect
     it->rect = dest;
     // check if the rect is still inside the rect
-    if (!_rect.contains(dest)) {
+    if (!(_rect.contains(sf::Vector2f(dest.left, dest.top)) && _rect.contains(sf::Vector2f(dest.left + dest.width, dest.top + dest.width)))) {
         //save the node;
         auto node = *it;
         //locally remove the node
@@ -242,10 +200,11 @@ void quadTreeNode::updatePosition(entt::entity en, const Rect& dest, std::unorde
 
         //PAY ATTENCTION, FROM HERE 'this' could be nullptr!! don't do any action on the node itself
         //find the first parent quadTreeNode containing the rect
-        while (!parent->_rect.contains(dest) && parent != nullptr) {
+        while (!(parent->_rect.contains(sf::Vector2f(dest.left, dest.top)) && parent->_rect.contains(sf::Vector2f(dest.left + dest.width, dest.top + dest.width))) && parent != nullptr) {
             parent = parent->_parent;
         }
-        assert(parent->_rect.contains(dest));
+        assert(parent->_rect.contains(sf::Vector2f(dest.left, dest.top)));
+        assert(parent->_rect.contains(sf::Vector2f(dest.left + dest.width, dest.top + dest.width)));
         assert(parent != nullptr);
         //add to it & return
         parent->add(node, cache);
@@ -325,7 +284,7 @@ void quadTreeNode::_removeValue(entt::entity en) {
 }
 
 
-quadTree::quadTree(const Rect& rect):
+quadTree::quadTree(const sf::FloatRect& rect):
     _root{std::make_unique<quadTreeNode>(rect)}
 {}
 
@@ -333,7 +292,7 @@ void quadTree::add(const Node& n) {
     _root->add(n, _cache);
 }
 
-void quadTree::updatePosition(entt::entity en, const Rect& dest) {
+void quadTree::updatePosition(entt::entity en, const sf::FloatRect& dest) {
     _cache.at(en)->updatePosition(en, dest, _cache);
 }
 
@@ -343,8 +302,8 @@ std::vector<std::pair<entt::entity, entt::entity>> quadTree::findAllIntersection
     return intersections;
 }
 
-std::vector<Rect> quadTree::getRects() const {
-    std::vector<Rect> boxes;
+std::vector<sf::FloatRect> quadTree::getRects() const {
+    std::vector<sf::FloatRect> boxes;
     _root->getRects(boxes);
     return boxes;
 }
