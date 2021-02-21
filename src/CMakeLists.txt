@@ -10,6 +10,7 @@ target_link_libraries (sfml sfml-graphics sfml-window sfml-system tgui spdlog::s
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/TGUI/themes/Black.png DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/data/gui)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/TGUI/themes/Black.txt DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/data/gui)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/data/man.png DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/data)
 
 add_subdirectory(systems)
 add_subdirectory(utils)
