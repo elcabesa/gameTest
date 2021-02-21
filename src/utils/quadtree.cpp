@@ -1,6 +1,8 @@
 #include <iostream>
 #include "quadtree.h"
 
+//TODO create a function to test is a sf::rect contains sf::rect
+
 quadTreeNode::quadTreeNode(const sf::FloatRect& rect, unsigned int depth, quadTreeNode* parent):_rect{rect}, _parent{parent}, _depth{depth} {}
 
 bool quadTreeNode::_isLeaf() const {
