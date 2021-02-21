@@ -7,7 +7,7 @@
 #include "quadtree.h"
 
 std::vector<sf::RectangleShape> quadTreeRects; // TODO remove global variable
-auto quadtree = quadTree(Rect(0.0f, 0.0f, float(worldY), float(worldX))); // TODO remove global variable
+auto quadtree = quadTree(sf::FloatRect(0.0f, 0.0f, float(worldX), float(worldY))); // TODO remove global variable
  
 const std::vector<sf::RectangleShape>& getDebugRects() {
     return quadTreeRects;
@@ -15,16 +15,16 @@ const std::vector<sf::RectangleShape>& getDebugRects() {
 
 void CD_init(entt::registry& reg) {
     Node node;
-    node.rect.height() = objectSize;
-    node.rect.width() = objectSize;
+    node.rect.height = objectSize;
+    node.rect.width = objectSize;
 
     auto view = reg.view<position>();
 
     for (auto& en: view) {
         auto& pos = view.get<position>(en); 
         node.id = en;
-        node.rect.top() = pos.y;
-        node.rect.left() = pos.x;
+        node.rect.top = pos.y;
+        node.rect.left = pos.x;
         quadtree.add(node);   
     }
 }
@@ -34,15 +34,15 @@ void CD_update(entt::registry& reg) {
     
     for (auto& en: view) {
         auto& pos = view.get<position>(en);
-        quadtree.updatePosition(en, Rect(pos.y, pos.x, 2, 2));
+        quadtree.updatePosition(en, sf::FloatRect(pos.x, pos.y, 2, 2));
     }
 }
 
 void CD_calcRects() {
     quadTreeRects.clear();
     for (auto&b : quadtree.getRects()) {
-        sf::RectangleShape r(sf::Vector2(b.width(), b.height()));
-        r.setPosition(b.left(), b.top());
+        sf::RectangleShape r(sf::Vector2(b.width, b.height));
+        r.setPosition(b.left, b.top);
         r.setFillColor(sf::Color::Transparent);
         r.setOutlineColor(sf::Color::Yellow);
         r.setOutlineThickness(2);
