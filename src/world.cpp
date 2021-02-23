@@ -19,15 +19,15 @@ World::World(sf::RenderTarget& outputTarget)
 , _gui(_target)
 , _elapsed{sf::Time::Zero}
 , _zoomLevel{0}
+, _textureManager{}
 {
     _initPopulation();
     _target.setView(_worldView);
 
-    if (!_texture.loadFromFile("data/man.png")) {
-        exit(0);
-    }
-    _texture.setSmooth(true);
-    _sprite.setTexture(_texture);
+    _textureManager.load(Textures::man,	"data/man.png");
+    auto& man = _textureManager.get(Textures::man);
+    man.setSmooth(true);
+    _sprite.setTexture(man);
     _sprite.setScale(sf::Vector2f(0.002f, 0.002f));
 }
 

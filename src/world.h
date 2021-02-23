@@ -7,7 +7,10 @@
 
 #include "entt/src/entt/entt.hpp"
 
+#include "utils/resourceManager.h"
+
 #include "gui.h"
+#include "resourceIdentifiers.h"
 
 class World {
 public:
@@ -27,8 +30,7 @@ private:
     sf::Time _elapsed;
 
     int _zoomLevel;
-    // TODO add a texture manager/holder
-    sf::Texture _texture;
+    TextureManager _textureManager;
     sf::Sprite _sprite;
 
     void _initPopulation();
