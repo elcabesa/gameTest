@@ -19,6 +19,8 @@ namespace Textures
     };
 }
 
+//TODO use path as identifier
+
 typedef ResourceManager<sf::Texture, Textures::ID> TextureManager;
 
 #endif
