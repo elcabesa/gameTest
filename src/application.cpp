@@ -57,13 +57,32 @@ void Application::_processInput() {
                 // TODO create a function to setup widow all the time there is a change
                 //_window.setVerticalSyncEnabled(true);
                 _window.setFramerateLimit(fps);
+            }        
+        }
+        if (!_world.processInput(event)) {
+            // TODO manage resize
+            if (event.type == sf::Event::KeyPressed) {
+                if (event.key.code == sf::Keyboard::Add) {
+                _world.getDispatcher().enqueue<ZoomEvent>(ZoomEvent::IN);  
+                }
+                if (event.key.code == sf::Keyboard::Subtract) {
+                    _world.getDispatcher().enqueue<ZoomEvent>(ZoomEvent::OUT);  
+                }
+                if (event.key.code == sf::Keyboard::Left) {
+                    _world.getDispatcher().enqueue<PanEvent>(PanEvent::LEFT);  
+                }
+                if (event.key.code == sf::Keyboard::Right) {
+                    _world.getDispatcher().enqueue<PanEvent>(PanEvent::RIGHT);  
+                }
+                if (event.key.code == sf::Keyboard::Up) {
+                    _world.getDispatcher().enqueue<PanEvent>(PanEvent::UP);  
+                }
+                if (event.key.code == sf::Keyboard::Down) {
+                    _world.getDispatcher().enqueue<PanEvent>(PanEvent::DOWN);  
+                }
             }
         }
-
-        if (!_world.processInput(event)) {
-            //std::cout<<"event"<<std::endl;
-            // TODO handle events for the game
-        }
+        
         if (event.type == sf::Event::Closed) {
             _window.close();
         }

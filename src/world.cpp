@@ -17,6 +17,7 @@ World::World(sf::RenderTarget& outputTarget)
 : _target{outputTarget}
 , _worldView(sf::FloatRect(0, 0, worldX, worldY))
 , _gui(_target)
+, _dispatcher{}
 , _elapsed{sf::Time::Zero}
 , _zoomLevel{0}
 , _textureManager{}
@@ -29,6 +30,9 @@ World::World(sf::RenderTarget& outputTarget)
     man.setSmooth(true);
     _sprite.setTexture(man);
     _sprite.setScale(sf::Vector2f(0.002f, 0.002f));
+
+    _dispatcher.sink<ZoomEvent>().connect<&World::zoom>(*this);
+    _dispatcher.sink<PanEvent>().connect<&World::pan>(*this);
 }
 
 void World::_initPopulation() {
@@ -57,74 +61,7 @@ void World::_updateHealthyInfo() {
 }
 
 bool World::processInput(sf::Event ev) {
-    //TODO decouple input & world using command list
-    if(_gui.handleEvent(ev)) {
-        return true;
-    }
-
-    if (ev.type == sf::Event::Resized)
-    {
-        //TODO WRITE CODE FOR resize
-        // update the view to the new size of the window
-        /*sf::FloatRect visibleArea(0.f, 0.f, ev.size.width, ev.size.height);
-        _worldView.reset(visibleArea);
-        _target.setView(_worldView);*/
-        return true;
-    }
-    if (ev.type == sf::Event::KeyPressed)
-    {
-        if (ev.key.code == sf::Keyboard::Add)
-        {
-            if (_zoomLevel<10) {
-                ++_zoomLevel;
-                _worldView.zoom(0.5);
-                _target.setView(_worldView);
-                _ensureViewInsideLimits();
-            }
-
-            return true;
-        }
-        if (ev.key.code == sf::Keyboard::Subtract)
-        {
-            if (_zoomLevel>0) {
-                --_zoomLevel;
-                _worldView.zoom(2.0);
-                _target.setView(_worldView);
-                _ensureViewInsideLimits();
-            }
-            return true;
-        }
-        if (ev.key.code == sf::Keyboard::Left)
-        {
-            _worldView.move(-1, 0);
-            _target.setView(_worldView);
-            _ensureViewInsideLimits();
-            return true;
-        }
-        if (ev.key.code == sf::Keyboard::Right)
-        {
-            _worldView.move(1, 0);
-            _target.setView(_worldView);
-            _ensureViewInsideLimits();
-            return true;
-        }
-        if (ev.key.code == sf::Keyboard::Up)
-        {
-            _worldView.move(0, -1);
-            _target.setView(_worldView);
-            _ensureViewInsideLimits();
-            return true;
-        }
-        if (ev.key.code == sf::Keyboard::Down)
-        {
-            _worldView.move(0, 1);
-            _target.setView(_worldView);
-            _ensureViewInsideLimits();
-            return true;
-        }
-    }
-    return false;
-
+    return _gui.handleEvent(ev);
 }
 
 void World::_ensureViewInsideLimits() {
@@ -148,6 +85,8 @@ void World::_ensureViewInsideLimits() {
 }
 
 void World::update(sf::Time dt) {
+    _dispatcher.update<ZoomEvent>();
+    _dispatcher.update<PanEvent>();
     updatePosition(_registry);
     worldBorderCollision(_registry);
     calcCollision(_registry);
@@ -177,4 +116,78 @@ sf::FloatRect World::_getViewBorders() const {
     auto& center = _worldView.getCenter();
     auto& size = _worldView.getSize();
     return sf::FloatRect(center - size / 2.0f, size);
+}
+
+void World::_zoomIn() {
+    if (_zoomLevel<10) {
+        ++_zoomLevel;
+        _worldView.zoom(0.5);
+        _target.setView(_worldView);
+        _ensureViewInsideLimits();
+    }
+}
+
+void World::_zoomOut() {
+    if (_zoomLevel>0) {
+        --_zoomLevel;
+        _worldView.zoom(2.0);
+        _target.setView(_worldView);
+        _ensureViewInsideLimits();
+    }
+}
+
+void World::_panLeft() {
+    _worldView.move(-1, 0);
+    _target.setView(_worldView);
+    _ensureViewInsideLimits();
+}
+
+void World::_panRight() {
+    _worldView.move(1, 0);
+    _target.setView(_worldView);
+    _ensureViewInsideLimits();
+}
+
+void World::_panUp() {
+    _worldView.move(0, -1);
+    _target.setView(_worldView);
+    _ensureViewInsideLimits();
+}
+
+void World::_panDown() {
+    _worldView.move(0, 1);
+    _target.setView(_worldView);
+    _ensureViewInsideLimits();
+
+}
+
+void World::zoom(const ZoomEvent& ev) {
+    if (ev.type == ZoomEvent::IN) {
+        _zoomIn();
+    } else {
+        _zoomOut();
+    }
+}
+
+void World::pan(const PanEvent& ev) {
+    switch (ev.direction) {
+    case PanEvent::UP :
+        _panUp();
+        break;
+    case PanEvent::DOWN :
+        _panDown();
+        break;
+    case PanEvent::LEFT :
+        _panLeft();
+        break;
+    case PanEvent::RIGHT :
+        _panRight();
+        break;
+    default:
+        break;
+    }
+}
+
+entt::dispatcher& World::getDispatcher() {
+    return _dispatcher;
 }
