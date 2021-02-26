@@ -12,7 +12,13 @@
 #include "gui.h"
 #include "resourceIdentifiers.h"
 
-struct ZoomEvent { bool zoomIn; }; // TODO change to bool to enum 
+struct ZoomEvent { 
+    enum Type{
+        IN,
+        OUT
+    };
+    Type type; };
+    
 struct PanEvent { 
     enum Direction{
         UP,
@@ -20,7 +26,6 @@ struct PanEvent {
         LEFT,
         RIGHT
     };
-
     Direction direction;
 };
 

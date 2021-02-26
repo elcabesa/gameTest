@@ -61,22 +61,7 @@ void World::_updateHealthyInfo() {
 }
 
 bool World::processInput(sf::Event ev) {
-    //TODO decouple input & world using command list
-    if(_gui.handleEvent(ev)) {
-        return true;
-    }
-
-    if (ev.type == sf::Event::Resized)
-    {
-        //TODO WRITE CODE FOR resize
-        // update the view to the new size of the window
-        /*sf::FloatRect visibleArea(0.f, 0.f, ev.size.width, ev.size.height);
-        _worldView.reset(visibleArea);
-        _target.setView(_worldView);*/
-        return true;
-    }
-    return false;
-
+    return _gui.handleEvent(ev);
 }
 
 void World::_ensureViewInsideLimits() {
@@ -177,7 +162,7 @@ void World::_panDown() {
 }
 
 void World::zoom(const ZoomEvent& ev) {
-    if (ev.zoomIn) {
+    if (ev.type == ZoomEvent::IN) {
         _zoomIn();
     } else {
         _zoomOut();
