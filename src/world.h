@@ -12,12 +12,27 @@
 #include "gui.h"
 #include "resourceIdentifiers.h"
 
+struct ZoomEvent { bool zoomIn; }; // TODO change to bool to enum 
+struct PanEvent { 
+    enum Direction{
+        UP,
+        DOWN,
+        LEFT,
+        RIGHT
+    };
+
+    Direction direction;
+};
+
 class World {
 public:
     World(sf::RenderTarget& outputTarget);
     bool processInput(sf::Event ev);
     void update(sf::Time dt);
     void render();
+    void zoom(const ZoomEvent&);
+    void pan(const PanEvent&);
+    entt::dispatcher& getDispatcher();
 
 private:
     sf::RenderTarget& _target;
@@ -26,6 +41,7 @@ private:
     Gui _gui; // TODO maybe move to gamestate??
 
     entt::registry _registry;
+    entt::dispatcher _dispatcher;
 
     sf::Time _elapsed;
 
@@ -39,6 +55,13 @@ private:
     void _ensureViewInsideLimits();
 
     static constexpr float updateHealthTime = 0.1f;
+
+    void _zoomIn();
+    void _zoomOut();
+    void _panLeft();
+    void _panRight();
+    void _panUp();
+    void _panDown();
 };
 
 #endif
