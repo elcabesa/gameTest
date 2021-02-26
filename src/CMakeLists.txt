@@ -4,6 +4,7 @@ add_executable(sfml
     application.cpp
     gui.cpp
     main.cpp
+    player.cpp
     world.cpp
 )
 target_link_libraries (sfml sfml-graphics sfml-window sfml-system tgui spdlog::spdlog_header_only)

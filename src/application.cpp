@@ -10,10 +10,12 @@ Application::Application()
 : _window(sf::VideoMode(dimX, dimY), "Simulator", sf::Style::Resize | sf::Style::Close) 
 , _isFullScreen{false}
 , _world{_window}
+, _player(_world.getDispatcher())
 {
     // create the window
     //_window.setVerticalSyncEnabled(true);
     _window.setFramerateLimit(fps);
+    _window.setKeyRepeatEnabled(false);
 }
 
 void Application::run() {
@@ -57,36 +59,22 @@ void Application::_processInput() {
                 // TODO create a function to setup widow all the time there is a change
                 //_window.setVerticalSyncEnabled(true);
                 _window.setFramerateLimit(fps);
+                _window.setKeyRepeatEnabled(false);
+
             }        
         }
+        
         if (!_world.processInput(event)) {
             // TODO manage resize
-            if (event.type == sf::Event::KeyPressed) {
-                if (event.key.code == sf::Keyboard::Add) {
-                _world.getDispatcher().enqueue<ZoomEvent>(ZoomEvent::IN);  
-                }
-                if (event.key.code == sf::Keyboard::Subtract) {
-                    _world.getDispatcher().enqueue<ZoomEvent>(ZoomEvent::OUT);  
-                }
-                if (event.key.code == sf::Keyboard::Left) {
-                    _world.getDispatcher().enqueue<PanEvent>(PanEvent::LEFT);  
-                }
-                if (event.key.code == sf::Keyboard::Right) {
-                    _world.getDispatcher().enqueue<PanEvent>(PanEvent::RIGHT);  
-                }
-                if (event.key.code == sf::Keyboard::Up) {
-                    _world.getDispatcher().enqueue<PanEvent>(PanEvent::UP);  
-                }
-                if (event.key.code == sf::Keyboard::Down) {
-                    _world.getDispatcher().enqueue<PanEvent>(PanEvent::DOWN);  
-                }
-            }
+            _player.handleEvent(event);
         }
         
         if (event.type == sf::Event::Closed) {
             _window.close();
         }
     }
+    // TODO insert it in a gamestack
+    _player.handleRealTimeEvent();
     _statistics.addEvtTime();
 }
 

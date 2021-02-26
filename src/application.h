@@ -6,6 +6,7 @@
 
 #include "utils/statistics.h"
 
+#include "player.h"
 #include "world.h"
 
 
@@ -18,6 +19,7 @@ private:
     bool _isFullScreen;
 
     World _world;
+    Player _player;
 
     sf::Clock _updateDt;
     EngineStatistics _statistics;
