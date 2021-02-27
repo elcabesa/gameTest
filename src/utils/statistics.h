@@ -3,10 +3,12 @@
 
 #include <cstdint>
 #include <SFML/System/Clock.hpp>
+#include <spdlog/spdlog.h>
 
 //TODO rename statistics
 class EngineStatistics{
 public:
+    EngineStatistics();
     void print();
     void addDisTime();
     void addEvtTime();
@@ -25,6 +27,7 @@ private:
     int64_t _getTotalTime() const;
 
     sf::Clock _clk;
+    std::shared_ptr<spdlog::logger> _logger;
 };
 
 #endif

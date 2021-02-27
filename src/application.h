@@ -3,6 +3,7 @@
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Time.hpp>
+#include <spdlog/spdlog.h>
 
 #include "utils/statistics.h"
 
@@ -24,9 +25,13 @@ private:
     sf::Clock _updateDt;
     EngineStatistics _statistics;
 
+    std::shared_ptr<spdlog::logger> _logger;
+
     void _processInput();
     void _update(sf::Time dt);
     void _render();
+    void _configureWindow();
+    void _toggleLoggerLevel(spdlog::level::level_enum l);
     
 };
 
