@@ -3,7 +3,7 @@
 
 #include <cstdint>
 #include <SFML/System/Clock.hpp>
-#include <spdlog/spdlog.h>
+#include "spdlog/spdlog.h"
 
 //TODO rename statistics
 class EngineStatistics{

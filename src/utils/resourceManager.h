@@ -4,11 +4,13 @@
 #include <memory>
 #include <map>
 #include <string>
+#include "spdlog/spdlog.h"
 
 template <typename Resource, typename Identifier>
 class ResourceManager
 {
 public:
+	ResourceManager();
 	void load(Identifier id, const std::string& filename);
 
 	template <typename Parameter>
@@ -20,6 +22,7 @@ public:
 private:
 	void _insertResource(Identifier id, std::unique_ptr<Resource> resource);
 	std::map<Identifier, std::unique_ptr<Resource>>	_resourceMap;
+	std::shared_ptr<spdlog::logger> _logger;
 };
 
 #endif

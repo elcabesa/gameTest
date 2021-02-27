@@ -3,7 +3,7 @@
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Time.hpp>
-#include <spdlog/spdlog.h>
+#include "spdlog/spdlog.h"
 
 #include "utils/statistics.h"
 
