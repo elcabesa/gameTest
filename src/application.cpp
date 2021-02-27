@@ -1,9 +1,7 @@
 
-#include <spdlog/spdlog.h>
+#include "spdlog/sinks/stdout_color_sinks.h"
 #include "application.h"
 #include "parameters.h"
-
-#include <iostream>
 
 //TODO find a good name for application
 Application::Application()
@@ -12,14 +10,15 @@ Application::Application()
 , _world{_window}
 , _player(_world.getDispatcher())
 {
-    // create the window
-    //_window.setVerticalSyncEnabled(true);
-    _window.setFramerateLimit(fps);
-    _window.setKeyRepeatEnabled(false);
+    _logger = spdlog::stdout_color_mt("Application");
+    _logger->set_level(spdlog::level::info);
+    _logger->trace("Application ctor");
+
+    _configureWindow();
 }
 
 void Application::run() {
-    spdlog::info("SFML start");
+    _logger->info("Application start");
     const sf::Time TimePerFrame = sf::seconds(1.f/simSpeed);
 
     // create a clock to track the elapsed time
@@ -38,30 +37,43 @@ void Application::run() {
 			_update(TimePerFrame);
             ++i;
             if(i == 10) {
-                std::cout<<"warning system is too slow"<<std::endl;
+                _logger->warn("system is too slow");
             }
 		}
         _render();
         
         _statistics.print();
     }
+    _logger->trace("Exit Application");
 }
 
 void Application::_processInput() {
+    _logger->trace("Process input");
     // handle events
     sf::Event event;
     while (_window.pollEvent(event)) {
+        _logger->debug("New Event");
         // program events
         if (event.type == sf::Event::KeyPressed) {
             if (event.key.code == sf::Keyboard::F11) {
+                _logger->debug("F11, fullscreen toggle");
                 _isFullScreen = !_isFullScreen;
                 _window.create( _isFullScreen ? sf::VideoMode::getDesktopMode() : sf::VideoMode(dimX, dimY), "Simulator", _isFullScreen ? sf::Style::Fullscreen : sf::Style::Resize | sf::Style::Close);
-                // TODO create a function to setup widow all the time there is a change
-                //_window.setVerticalSyncEnabled(true);
-                _window.setFramerateLimit(fps);
-                _window.setKeyRepeatEnabled(false);
+                _configureWindow();
+            }
+            if (event.key.code == sf::Keyboard::F1) {
+                _logger->debug("F1, setLog Level Info");
+                _toggleLoggerLevel(spdlog::level::info);
+            }
+            if (event.key.code == sf::Keyboard::F2) {
+                _logger->debug("F2, setLog Level Debug");
+                _toggleLoggerLevel(spdlog::level::debug);
+            }
+            if (event.key.code == sf::Keyboard::F3) {
+                _logger->debug("F3, setLog Level Trace");
+                _toggleLoggerLevel(spdlog::level::trace);
+            }
 
-            }        
         }
         
         if (!_world.processInput(event)) {
@@ -70,6 +82,7 @@ void Application::_processInput() {
         }
         
         if (event.type == sf::Event::Closed) {
+            _logger->debug("Close Event");
             _window.close();
         }
     }
@@ -79,14 +92,27 @@ void Application::_processInput() {
 }
 
 void Application::_update(sf::Time dt) {
+    _logger->trace("Update");
     _world.update(dt);
     _statistics.addSimTime();
 }
 
 //TODO add lagtime
 void Application::_render() {
+    _logger->trace("Render");
     _window.clear();
     _world.render();
     _statistics.addDrwTime();
     _window.display();
+}
+
+void Application::_configureWindow() {
+    //_window.setVerticalSyncEnabled(true);
+    _window.setFramerateLimit(fps);
+    _window.setKeyRepeatEnabled(false);
+}
+
+void Application::_toggleLoggerLevel(spdlog::level::level_enum l) {
+    _logger->set_level(l);
+    spdlog::get("Statistics")->set_level(l);
 }

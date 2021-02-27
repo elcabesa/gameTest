@@ -1,7 +1,11 @@
-#include <iostream>
+#include <SFML/System/Time.hpp>
+
+#include "spdlog/sinks/stdout_color_sinks.h"
 #include "statistics.h"
 
-#include <SFML/System/Time.hpp>
+EngineStatistics::EngineStatistics() {
+    _logger = spdlog::stdout_color_mt("Statistics");
+}
 
 void EngineStatistics::addDisTime() {
     _disTime += _clk.restart().asMicroseconds();
@@ -43,15 +47,16 @@ void EngineStatistics::_clear() {
 
 void EngineStatistics::_print() const {
     int64_t total = _getTotalTime();
-    std::cout 
-        << "evt:" << 100.0 * _evtTime / total
-        << "% sim:" << 100.0 * _simTime / total
-        << "% draw:" << 100.0 * _drwTime / total
-        << "% display:" << 100.0 * _disTime / total
-        << "% total:" << total
-        << "us" << std::endl;
+    _logger->trace("evt:{}% sim:{}% draw:{}% display:{}% total:{}us", 
+        100.0 * _evtTime / total,
+        100.0 * _simTime / total,
+        100.0 * _drwTime / total,
+        100.0 * _disTime / total,
+        total
+    );
+
     float fps = (_frames * 1e6f) / total;
-    std::cout<<"FPS:"<<fps<< " ("<<1e6f/fps <<"us)"<<std::endl;
+    _logger->debug("FPS:{} ({}us)", fps, 1e6f/fps);
     float simps = (_sims * 1e6f) / total;
-    std::cout<<"SimPS:"<<simps<< " ("<<1e6f/simps <<"us)"<<std::endl;
+    _logger->debug("SimPS:{} ({}us)", simps, 1e6f/simps);
 }
