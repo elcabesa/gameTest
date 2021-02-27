@@ -1,4 +1,3 @@
-#include <iostream>
 #include "quadtree.h"
 
 quadTree::quadTree(const sf::FloatRect& rect):
