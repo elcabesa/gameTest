@@ -8,6 +8,7 @@
 #include "utils/statistics.h"
 
 #include "player.h"
+#include "stateStack.h"
 #include "world.h"
 
 
@@ -19,8 +20,9 @@ private:
     sf::RenderWindow _window;
     bool _isFullScreen;
 
-    World _world;
-    Player _player;
+    TextureManager _textureManager;
+    State::Context _context;
+    StateStack _stateStack;
 
     sf::Clock _updateDt;
     EngineStatistics _statistics;
@@ -32,6 +34,7 @@ private:
     void _render();
     void _configureWindow();
     void _toggleLoggerLevel(spdlog::level::level_enum l);
+    void _registerStates();
     
 };
 
