@@ -15,17 +15,17 @@ const std::vector<sf::RectangleShape>& getDebugRects() {
 
 void CD_init(entt::registry& reg) {
     Node node;
-    node.rect.height = objectSize;
-    node.rect.width = objectSize;
+    sf::FloatRect rect;
+    rect.height = objectSize;
+    rect.width = objectSize;
 
     auto view = reg.view<position>();
 
     for (auto& en: view) {
         auto& pos = view.get<position>(en); 
-        node.id = en;
-        node.rect.top = pos.y;
-        node.rect.left = pos.x;
-        quadtree.add(node);   
+        rect.top = pos.y;
+        rect.left = pos.x;
+        quadtree.add(en, rect);   
     }
 }
 
