@@ -1,18 +1,28 @@
 
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "application.h"
+#include "gameState.h"
 #include "parameters.h"
+#include "pauseState.h"
 
 //TODO find a good name for application
 Application::Application()
 : _window(sf::VideoMode(dimX, dimY), "Simulator", sf::Style::Resize | sf::Style::Close) 
 , _isFullScreen{false}
-, _world{_window}
-, _player(_world.getDispatcher())
+, _textureManager{}
+, _context{_window, _textureManager}
+, _stateStack(_context)
 {
     _logger = spdlog::stdout_color_mt("Application");
     _logger->set_level(spdlog::level::info);
     _logger->trace("Application ctor");
+
+    _textureManager.load(Textures::man,	"data/man.png");
+    auto& man = _textureManager.get(Textures::man);
+    man.setSmooth(true);
+
+    _registerStates();
+    _stateStack.pushState(States::ID::Game);
 
     _configureWindow();
 }
@@ -75,25 +85,20 @@ void Application::_processInput() {
             }
 
         }
-        
-        if (!_world.processInput(event)) {
-            // TODO manage resize
-            _player.handleEvent(event);
-        }
+
+        _stateStack.handleEvent(event);
         
         if (event.type == sf::Event::Closed) {
             _logger->debug("Close Event");
             _window.close();
         }
     }
-    // TODO insert it in a gamestack
-    _player.handleRealTimeEvent();
     _statistics.addEvtTime();
 }
 
 void Application::_update(sf::Time dt) {
     _logger->trace("Update");
-    _world.update(dt);
+    _stateStack.update(dt);
     _statistics.addSimTime();
 }
 
@@ -101,7 +106,7 @@ void Application::_update(sf::Time dt) {
 void Application::_render() {
     _logger->trace("Render");
     _window.clear();
-    _world.render();
+    _stateStack.render();
     _statistics.addDrwTime();
     _window.display();
 }
@@ -115,4 +120,9 @@ void Application::_configureWindow() {
 void Application::_toggleLoggerLevel(spdlog::level::level_enum l) {
     _logger->set_level(l);
     spdlog::get("Statistics")->set_level(l);
+}
+
+void Application::_registerStates() {
+    _stateStack.registerState<GameState>(States::ID::Game);
+    _stateStack.registerState<PauseState>(States::ID::Pause);
 }

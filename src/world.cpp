@@ -1,5 +1,7 @@
 #include <iostream>
 
+#include <SFML/Graphics/RenderTarget.hpp>
+
 #include "parameters.h"
 #include "world.h"
 
@@ -12,22 +14,19 @@
 #include "systems/movement.h"
 #include "systems/renderer.h"
 
-
-World::World(sf::RenderTarget& outputTarget)
+World::World(sf::RenderTarget& outputTarget, const TextureManager& textureManager)
 : _target{outputTarget}
 , _worldView(sf::FloatRect(0, 0, worldX, worldY))
 , _gui(_target)
 , _dispatcher{}
 , _elapsed{sf::Time::Zero}
 , _zoomLevel{0}
-, _textureManager{}
+, _textureManager(textureManager)
 {
     _initPopulation();
     _target.setView(_worldView);
 
-    _textureManager.load(Textures::man,	"data/man.png");
     auto& man = _textureManager.get(Textures::man);
-    man.setSmooth(true);
     _sprite.setTexture(man);
     _sprite.setScale(sf::Vector2f(0.002f, 0.002f));
 
@@ -60,7 +59,7 @@ void World::_updateHealthyInfo() {
     );
 }
 
-bool World::processInput(sf::Event ev) {
+bool World::processInput(const sf::Event& ev) {
     return _gui.handleEvent(ev);
 }
 

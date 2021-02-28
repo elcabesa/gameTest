@@ -1,7 +1,6 @@
 #ifndef WORLD_H
 #define WORLD_H
 
-#include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/View.hpp>
 #include <SFML/System/Time.hpp>
 
@@ -11,6 +10,11 @@
 
 #include "gui.h"
 #include "resourceIdentifiers.h"
+
+// forward declaration
+namespace sf {
+	class RenderTarget;
+}
 
 struct ZoomEvent { 
     enum Type{
@@ -31,8 +35,8 @@ struct PanEvent {
 
 class World {
 public:
-    World(sf::RenderTarget& outputTarget);
-    bool processInput(sf::Event ev);
+    World(sf::RenderTarget& outputTarget, const TextureManager& textureManager);
+    bool processInput(const sf::Event& ev);
     void update(sf::Time dt);
     void render();
     void zoom(const ZoomEvent&);
@@ -51,7 +55,7 @@ private:
     sf::Time _elapsed;
 
     int _zoomLevel;
-    TextureManager _textureManager;
+    const TextureManager& _textureManager;
     sf::Sprite _sprite;
 
     void _initPopulation();

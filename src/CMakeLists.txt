@@ -2,9 +2,13 @@ find_package(SFML 2.5.1 COMPONENTS system window graphics REQUIRED)
 
 add_executable(sfml 
     application.cpp
+    gameState.cpp
     gui.cpp
     main.cpp
     player.cpp
+    pauseState.cpp
+    state.cpp
+    stateStack.cpp
     world.cpp
 )
 target_link_libraries (sfml sfml-graphics sfml-window sfml-system tgui spdlog::spdlog_header_only)
