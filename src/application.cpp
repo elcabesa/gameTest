@@ -4,6 +4,7 @@
 #include "gameState.h"
 #include "parameters.h"
 #include "pauseState.h"
+#include "titleState.h"
 
 //TODO find a good name for application
 Application::Application()
@@ -22,9 +23,9 @@ Application::Application()
     man.setSmooth(true);
 
     _registerStates();
-    _stateStack.pushState(States::ID::Game);
 
     _configureWindow();
+    _stateStack.pushState(States::ID::Title);
 }
 
 void Application::run() {
@@ -123,6 +124,7 @@ void Application::_toggleLoggerLevel(spdlog::level::level_enum l) {
 }
 
 void Application::_registerStates() {
+    _stateStack.registerState<TitleState>(States::ID::Title);
     _stateStack.registerState<GameState>(States::ID::Game);
     _stateStack.registerState<PauseState>(States::ID::Pause);
 }

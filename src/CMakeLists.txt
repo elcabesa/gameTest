@@ -9,6 +9,7 @@ add_executable(sfml
     pauseState.cpp
     state.cpp
     stateStack.cpp
+    titleState.cpp
     world.cpp
 )
 target_link_libraries (sfml sfml-graphics sfml-window sfml-system tgui spdlog::spdlog_header_only)
